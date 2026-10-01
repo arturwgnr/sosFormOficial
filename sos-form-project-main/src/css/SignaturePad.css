@@ -1,0 +1,27 @@
+.signature-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.signature-canvas {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  width: 250px; /* ou 100% se quiser responsivo */
+  height: 100px; /* altura fixa */
+}
+.clear-btn {
+  background: #d9534f; /* vermelho */
+  color: #fff;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.clear-btn:hover {
+  opacity: 0.85;
+}

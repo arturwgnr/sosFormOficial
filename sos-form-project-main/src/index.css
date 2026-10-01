@@ -1,0 +1,89 @@
+/* index.css (global) */
+
+/* Reset básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100vh; /* ocupa toda a altura da tela */
+  width: 100%;
+  font-family: Arial, sans-serif;
+  background: var(--color-background);
+  color: var(--color-text);
+  transition: all 0.3s ease;
+}
+
+/* Variáveis globais base */
+:root {
+  --color-primary: #152c4b; /* azul escuro */
+  --color-secondary: #f1f1f1; /* cinza claro */
+  --color-white: #ffffff;
+  --color-error: #d9534f;
+  --color-success: #5cb85c;
+}
+
+/* Tema claro */
+[data-theme="light"] {
+  --color-background: #f1f1f1; /* fundo geral */
+  --color-surface: var(--color-primary); /* form azul */
+  --color-text: var(--color-white); /* texto branco */
+  --color-button-bg: var(--color-white); /* botão branco */
+  --color-button-text: var(--color-primary); /* texto azul */
+}
+
+/* Tema escuro */
+[data-theme="dark"] {
+  --color-background: linear-gradient(
+    140deg,
+    #234768,
+    #092950
+  ); /* fundo azul */
+  --color-surface: var(--color-white); /* form branco */
+  --color-text: var(--color-primary); /* texto azul */
+  --color-button-bg: var(--color-primary); /* botão azul */
+  --color-button-text: var(--color-white); /* texto branco */
+}
+
+/* Estilo padrão de botões */
+button {
+  background-color: var(--color-button-bg);
+  color: var(--color-button-text);
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+/* Inputs */
+input,
+textarea,
+select {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  color: var(--color-text);
+}
+
+/* Container padrão */
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  background: var(--color-surface);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
