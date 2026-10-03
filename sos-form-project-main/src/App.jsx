@@ -5,7 +5,6 @@ import History from "./pages/History";
 import SignReport from "./pages/SignReport"; // se quiser implementar assinatura remota depois
 import Topbar from "./components/Topbar";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
-import "./App.css";
 
 function App() {
   return (
