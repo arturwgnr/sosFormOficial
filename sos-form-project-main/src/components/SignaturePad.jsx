@@ -20,18 +20,21 @@ export default function SignaturePad({ onEnd, label }) {
 
   return (
     <div className="signature-container">
-      <p>{label}</p>
+      <p className="signature-container__label">{label}</p>
       <SignatureCanvas
-  ref={sigCanvas}
-  penColor="black"
-  canvasProps={{
-    className: "signature-canvas",
-    width: 250,
-    height: 100,
-  }}
-  onEnd={handleEnd}
-/>
+        ref={sigCanvas}
+        penColor="#152c4b"
+        canvasProps={{
+          className: "signature-canvas",
+          width: 320,
+          height: 140,
+        }}
+        onEnd={handleEnd}
+      />
       <button type="button" onClick={handleClear} className="clear-btn">
+        <span className="material-symbols-outlined" aria-hidden="true">
+          ink_eraser
+        </span>
         Limpar
       </button>
     </div>

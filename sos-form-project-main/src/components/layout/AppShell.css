@@ -1,0 +1,262 @@
+.app-shell {
+  min-height: 100vh;
+  background: var(--color-bg);
+}
+
+/* ---------- Marca (reaproveitado no sidebar e no menu mobile) ---------- */
+.app-shell__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-weight: 800;
+  font-size: var(--text-md);
+  color: #fff;
+}
+.app-shell__logo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  background: #fff;
+  padding: 3px;
+}
+
+/* ---------- Sidebar (desktop) ---------- */
+.app-shell__sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: var(--sidebar-width);
+  background: var(--color-primary);
+  display: none;
+  flex-direction: column;
+  padding: var(--space-6) var(--space-4);
+  z-index: 20;
+}
+
+.app-shell__nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-top: var(--space-8);
+  flex: 1;
+}
+
+.app-shell__nav-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0.75rem var(--space-4);
+  border-radius: var(--radius-md);
+  color: var(--color-text-on-primary-muted);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  transition: background var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard);
+}
+.app-shell__nav-link:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+.app-shell__nav-link.is-active {
+  background: var(--color-accent);
+  color: var(--color-primary-900);
+}
+
+.app-shell__user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.app-shell__avatar,
+.app-shell__topbar-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  color: var(--color-primary-900);
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.app-shell__user-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+.app-shell__user-info strong {
+  color: #fff;
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.app-shell__user-info span {
+  color: var(--color-text-on-primary-muted);
+  font-size: var(--text-xs);
+}
+
+.app-shell__logout {
+  background: transparent;
+  border: none;
+  color: var(--color-text-on-primary-muted);
+  display: flex;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+}
+.app-shell__logout:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+/* ---------- Topbar (mobile) ---------- */
+.app-shell__topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--topbar-height);
+  padding-top: env(safe-area-inset-top, 0px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-left: var(--space-4);
+  padding-right: var(--space-4);
+  background: var(--color-primary);
+  z-index: 30;
+}
+.app-shell__topbar-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  background: #fff;
+  padding: 2px;
+}
+.app-shell__menu-btn {
+  background: transparent;
+  border: none;
+  color: #fff;
+  display: flex;
+  padding: var(--space-1);
+}
+
+/* ---------- Menu mobile (drawer) ---------- */
+.app-shell__mobile-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+}
+.app-shell__mobile-menu-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 23, 38, 0.55);
+  animation: fade-in var(--duration-base) var(--ease-standard);
+}
+.app-shell__mobile-menu-panel {
+  position: absolute;
+  inset: 0 20% 0 0;
+  max-width: 320px;
+  background: var(--color-primary);
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-5);
+  padding-top: calc(var(--space-5) + env(safe-area-inset-top, 0px));
+  animation: slide-in var(--duration-base) var(--ease-standard);
+}
+.app-shell__mobile-menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+.app-shell__mobile-menu-header .app-shell__menu-btn {
+  color: var(--color-text-on-primary-muted);
+}
+.app-shell__mobile-logout {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  margin-top: auto;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes slide-in {
+  from {
+    transform: translateX(-100%);
+  }
+}
+
+/* ---------- Conteúdo ---------- */
+.app-shell__content {
+  padding: var(--space-5) var(--space-4);
+  padding-top: calc(var(--topbar-height) + var(--space-5));
+  padding-bottom: calc(var(--bottomnav-height) + var(--space-8));
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+}
+
+/* ---------- Bottom nav (mobile) ---------- */
+.app-shell__bottomnav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--bottomnav-height);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  display: flex;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  z-index: 30;
+  box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.06);
+}
+.app-shell__bottomnav-link {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--color-text-faint);
+}
+.app-shell__bottomnav-link .material-symbols-outlined {
+  font-size: 1.4rem;
+}
+.app-shell__bottomnav-link.is-active {
+  color: var(--color-accent-700);
+}
+
+/* ---------- Desktop ---------- */
+@media (min-width: 960px) {
+  .app-shell__sidebar {
+    display: flex;
+  }
+  .app-shell__topbar,
+  .app-shell__bottomnav,
+  .app-shell__mobile-menu {
+    display: none;
+  }
+  .app-shell__content {
+    margin-left: var(--sidebar-width);
+    padding: var(--space-8) var(--space-10);
+    padding-top: var(--space-10);
+  }
+}

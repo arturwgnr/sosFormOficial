@@ -1,0 +1,80 @@
+.public-footer {
+  background: var(--color-primary-900);
+  color: var(--color-text-on-primary-muted);
+}
+
+.public-footer__inner {
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: var(--space-16) var(--space-6) var(--space-10);
+  display: grid;
+  gap: var(--space-10);
+  grid-template-columns: 1fr;
+}
+
+.public-footer__brand {
+  display: flex;
+  gap: var(--space-4);
+  align-items: flex-start;
+}
+.public-footer__brand img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  background: #fff;
+  padding: 4px;
+  flex-shrink: 0;
+}
+.public-footer__brand strong {
+  color: #fff;
+  font-size: var(--text-md);
+  display: block;
+  margin-bottom: var(--space-1);
+}
+.public-footer__brand p {
+  font-size: var(--text-sm);
+  max-width: 32ch;
+}
+
+.public-footer__col h4 {
+  color: #fff;
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.public-footer__col a,
+.public-footer__col p {
+  display: block;
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-2);
+  line-height: var(--leading-relaxed);
+}
+.public-footer__col a:hover {
+  color: #fff;
+}
+
+.public-footer__whatsapp {
+  display: inline-flex !important;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-whatsapp) !important;
+  font-weight: 700;
+}
+.public-footer__whatsapp .material-symbols-outlined {
+  font-size: 1.1rem;
+}
+
+.public-footer__bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: var(--space-5) var(--space-6);
+  text-align: center;
+  font-size: var(--text-xs);
+}
+
+@media (min-width: 720px) {
+  .public-footer__inner {
+    grid-template-columns: 1.4fr 1fr 1fr;
+  }
+}
