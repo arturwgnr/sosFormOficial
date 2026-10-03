@@ -51,7 +51,7 @@ bloco lógico dentro da etapa), mensagens no padrão
 | 2     | Correção de bugs e reestruturação do PDF | concluída |
 | 3     | Backend (API, banco, autenticação)       | concluída |
 | 4     | Frontend novo (landing, auth, painel)    | concluída |
-| 5     | Importação dos relatórios antigos        | pendente  |
+| 5     | Importação dos relatórios antigos        | pulada (sem dados reais) |
 | 6     | Deploy                                   | pendente  |
 
 ### Registro
@@ -185,6 +185,10 @@ bloco lógico dentro da etapa), mensagens no padrão
   Confirmado sem overflow em nenhuma rota testada (`scrollWidth` ===
   390 em todas). Validado com `npm run build`, `npm run lint` e
   `npm run test:routes` (11/11) depois de cada ajuste.
+- 2026-10-03: Etapa 5 pulada. O usuário confirmou que o app antigo
+  nunca foi usado em produção, só em teste; não existem relatórios
+  reais no localStorage de ninguém para importar. Sem exportação, sem
+  importação, sem script de migração. Segue direto para a Etapa 6.
 
 ### Ideias e pendências
 
