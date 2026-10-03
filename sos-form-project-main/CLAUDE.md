@@ -48,7 +48,7 @@ bloco lógico dentro da etapa), mensagens no padrão
 | ----- | ---------------------------------------- | --------- |
 | 0     | Preparação (git, branch, CLAUDE.md)      | concluída |
 | 1     | Conversão TypeScript para JavaScript     | concluída |
-| 2     | Correção de bugs e reestruturação do PDF | pendente  |
+| 2     | Correção de bugs e reestruturação do PDF | concluída |
 | 3     | Backend (API, banco, autenticação)       | pendente  |
 | 4     | Frontend novo (landing, auth, painel)    | pendente  |
 | 5     | Importação dos relatórios antigos        | pendente  |
@@ -77,6 +77,32 @@ bloco lógico dentro da etapa), mensagens no padrão
   arquivo `EXECUTE.md` (cópia do CLAUDE.md), ambos não rastreados
   (aprovado pelo usuário). `npm run build`, `npm run lint` e `npm run dev`
   validados.
+- 2026-10-03: Etapa 2 concluída. Bug 1 (PDF de Empilhadeira incompleto):
+  adicionada seção "Rodapé do atendimento" com teste efetuado, motivo,
+  resultado, observações e tipo de serviço. Bug 2 (valores incompatíveis):
+  radios de resultado e estado inicial unificados em português
+  (`"positivo"/"negativo"`); select de tipo de serviço com estado inicial
+  `"garantia"` (antes `"warranty"`, que não existia nas opções). Bug 3
+  (PDF de uma página só): criado `src/utils/pdfLayout.js` com paginação
+  automática compartilhada pelos dois geradores (cabeçalho completo só na
+  primeira página, reduzido nas seguintes, assinaturas sempre na última
+  página, rodapé "Página X de Y" calculado numa segunda passada). Também
+  adicionada a data de geração no cabeçalho dos dois PDFs (exigida pela
+  seção "Relatórios e PDF" mas ausente até então). Testado com poucos e
+  muitos itens nos dois geradores (ver registro de testes abaixo). Bug 4
+  (`generateForkliftReportId` duplicada): removida a cópia morta que
+  existia dentro do gerador de PDF; a versão realmente usada
+  (`src/utils/idGenerator.js`) não foi alterada. Bug 5 (sem reset/download):
+  os dois formulários agora limpam campos e assinaturas após salvar
+  (remonte do `<form>` via `key`) e disparam o download do PDF
+  automaticamente, além de salvar no histórico. Bug 6 (arquivos sem uso):
+  removidos `ReportForm.jsx`, `ThemeToggle.jsx` e `App.css` (e seu import
+  morto em `App.jsx`), confirmados sem nenhuma referência no projeto.
+  `SignReport.jsx` mantido: tem rota ativa `/sign/:id`, não é código morto
+  (decisão do usuário). Validado com `npm run build`, `npm run lint` e
+  scripts de teste de paginação (poucos/muitos itens, texto curto/longo)
+  gerando e inspecionando os PDFs reais; arquivos de teste descartados,
+  não fazem parte do projeto.
 
 ### Ideias e pendências
 
