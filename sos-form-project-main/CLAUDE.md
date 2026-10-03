@@ -189,6 +189,37 @@ bloco lógico dentro da etapa), mensagens no padrão
   nunca foi usado em produção, só em teste; não existem relatórios
   reais no localStorage de ninguém para importar. Sem exportação, sem
   importação, sem script de migração. Segue direto para a Etapa 6.
+- 2026-10-03: Etapa 6 em andamento. Hospedagem decidida com o usuário
+  (free tier, sem cartão de crédito em nenhum): Cloudflare Pages
+  (frontend), Render (backend), Neon (Postgres). Domínio próprio do
+  usuário, `sistema.sostranspaletes.com.br` (frontend) e
+  `api.sostranspaletes.com.br` (backend). Preparado o código pro
+  cenário de subdomínios: `COOKIE_DOMAIN` opcional (só produção,
+  `.sostranspaletes.com.br`), `clearSessionCookie()` novo (os 3 pontos
+  que limpavam o cookie de sessão agora usam as mesmas opções de
+  domain/path/sameSite/secure usadas ao criar, senão o navegador não
+  reconheceria como o mesmo cookie). `npm start` não depende mais de
+  `--env-file=.env` (quebraria no Render, que injeta variáveis direto,
+  sem arquivo). Adicionado `prisma migrate deploy` (correto pra
+  produção) e `db:seed:prod`. `.env.example` (frontend e backend)
+  documentados com os valores de produção. Branch `upgrade-app`
+  mesclada em `main` e enviada ao GitHub (nunca tinha sido enviada).
+  Roteiro de deploy passo a passo (Neon, Render, Cloudflare Pages, DNS,
+  UptimeRobot como monitor de keep-alive) entregue ao usuário; falta
+  ele executar os passos manuais (criar as contas, colar as variáveis,
+  configurar DNS) antes de fechar a etapa.
+- 2026-10-03: Ajustes pós-Etapa 4 pedidos pelo usuário via UPDATES.md.
+  Login/Registro: logo removido (mantido em "aguardando aprovação"),
+  substituído por um link discreto "Voltar ao início"; card com faixa
+  de acento gradiente no topo. Landing: removido o `max-width`
+  centralizado de header, footer e seções de conteúdo (mantido só no
+  card da chamada final, que é um elemento flutuante por design);
+  `scroll-behavior: smooth` global (respeita `prefers-reduced-motion`);
+  texto branco nos botões "accent" da landing, glow do hover
+  preservado; clique no logo do header rola suavemente ao topo quando
+  já está na landing (navega normal nas outras páginas). Validado com
+  `npm run build`, `npm run lint` e Playwright headless (sem overflow
+  em 1440px e 390px, sem erro de console, scroll-to-topo confirmado).
 
 ### Ideias e pendências
 

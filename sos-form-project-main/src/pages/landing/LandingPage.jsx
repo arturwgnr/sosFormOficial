@@ -98,7 +98,7 @@ export default function LandingPage() {
           </p>
           <div className="landing__hero-actions">
             <Link to="/login">
-              <Button variant="accent" size="lg" icon="login">
+              <Button variant="accent" size="lg" icon="login" style={{ color: "#fff" }}>
                 Acessar o sistema
               </Button>
             </Link>
@@ -322,7 +322,7 @@ export default function LandingPage() {
           <p>Acesse com sua conta ou peça cadastro: a aprovação é rápida.</p>
           <div className="landing__cta-actions">
             <Link to="/login">
-              <Button variant="accent" size="lg" icon="login">
+              <Button variant="accent" size="lg" icon="login" style={{ color: "#fff" }}>
                 Acessar o sistema
               </Button>
             </Link>

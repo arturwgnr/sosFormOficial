@@ -6,8 +6,7 @@
   padding: var(--space-20) var(--space-5);
 }
 .landing__section-inner {
-  max-width: var(--content-max-width);
-  margin: 0 auto;
+  width: 100%;
 }
 .landing__eyebrow {
   display: inline-flex;
@@ -56,8 +55,7 @@
 }
 .landing__hero-inner {
   position: relative;
-  max-width: var(--content-max-width);
-  margin: 0 auto;
+  width: 100%;
   display: grid;
   gap: var(--space-10);
   align-items: center;

@@ -37,6 +37,7 @@ export default function LoginPage() {
 
   return (
     <AuthLayout
+      brand={false}
       eyebrow="Acesso ao sistema"
       title="Entrar na sua conta"
       subtitle="Use o e-mail e a senha do seu cadastro."

@@ -45,6 +45,7 @@ export default function RegisterPage() {
 
   return (
     <AuthLayout
+      brand={false}
       eyebrow="Novo cadastro"
       title="Criar sua conta"
       subtitle="Depois de criar, um administrador precisa aprovar antes de você poder entrar."

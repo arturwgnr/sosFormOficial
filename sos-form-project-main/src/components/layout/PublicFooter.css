@@ -4,8 +4,7 @@
 }
 
 .public-footer__inner {
-  max-width: var(--content-max-width);
-  margin: 0 auto;
+  width: 100%;
   padding: var(--space-16) var(--space-6) var(--space-10);
   display: grid;
   gap: var(--space-10);
