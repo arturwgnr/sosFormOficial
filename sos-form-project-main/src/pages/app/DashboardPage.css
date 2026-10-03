@@ -1,0 +1,181 @@
+/* ---------- Funcionário ---------- */
+.employee-dashboard__shortcuts {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 1fr;
+  margin-bottom: var(--space-8);
+}
+.shortcut-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  color: #fff;
+  box-shadow: var(--shadow-primary);
+  transition: transform var(--duration-base) var(--ease-standard);
+}
+.shortcut-card:hover {
+  transform: translateY(-3px);
+}
+.shortcut-card--pallet {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+}
+.shortcut-card--forklift {
+  background: linear-gradient(135deg, var(--color-secondary), var(--color-accent-700));
+}
+.shortcut-card__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.15);
+  flex-shrink: 0;
+}
+.shortcut-card__icon .material-symbols-outlined {
+  font-size: 1.75rem;
+}
+.shortcut-card__body {
+  flex: 1;
+}
+.shortcut-card__body h3 {
+  font-size: var(--text-md);
+}
+.shortcut-card__body p {
+  font-size: var(--text-sm);
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 2px;
+}
+
+.dashboard-list {
+  display: flex;
+  flex-direction: column;
+}
+.dashboard-list__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+  transition: background var(--duration-fast) var(--ease-standard);
+}
+.dashboard-list__item:last-child {
+  border-bottom: none;
+}
+.dashboard-list__item:hover {
+  background: var(--slate-50);
+}
+.dashboard-list__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  background: #e9eef5;
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+.dashboard-list__info {
+  flex: 1;
+  min-width: 0;
+}
+.dashboard-list__info strong {
+  display: block;
+  font-size: var(--text-sm);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dashboard-list__info span {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+.dashboard-list__meta {
+  font-size: var(--text-xs);
+  color: var(--color-text-faint);
+  white-space: nowrap;
+}
+
+/* ---------- Admin ---------- */
+.admin-dashboard__grid {
+  display: grid;
+  gap: var(--space-6);
+  grid-template-columns: 1fr;
+  margin-top: var(--space-6);
+}
+
+.admin-dashboard__pending-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--color-warning-bg);
+  border: 1px solid #fde68a;
+  margin-bottom: var(--space-6);
+}
+.admin-dashboard__pending-banner .material-symbols-outlined {
+  color: var(--color-warning);
+  font-size: 1.75rem;
+}
+.admin-dashboard__pending-banner strong {
+  display: block;
+  color: var(--color-warning);
+}
+.admin-dashboard__pending-banner p {
+  font-size: var(--text-sm);
+  color: var(--slate-700);
+}
+.admin-dashboard__pending-banner > div {
+  flex: 1;
+}
+
+.breakdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.breakdown-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.breakdown-row__label {
+  width: 100px;
+  flex-shrink: 0;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-transform: capitalize;
+}
+.breakdown-row__track {
+  flex: 1;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--slate-100);
+  overflow: hidden;
+}
+.breakdown-row__fill {
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: var(--radius-full);
+  transition: width var(--duration-slow) var(--ease-standard);
+}
+.breakdown-row__value {
+  width: 28px;
+  text-align: right;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+@media (min-width: 960px) {
+  .employee-dashboard__shortcuts {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .admin-dashboard__grid {
+    grid-template-columns: 1.4fr 1fr;
+  }
+}

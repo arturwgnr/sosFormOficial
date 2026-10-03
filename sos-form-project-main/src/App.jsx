@@ -1,44 +1,61 @@
-import Home from "./pages/Home";
-import ForkliftReport from "./pages/ForkliftReport";
-import PalletReport from "./pages/PalletReport";
-import History from "./pages/History";
-import SignReport from "./pages/SignReport"; // se quiser implementar assinatura remota depois
-import Topbar from "./components/Topbar";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import { RequireAuth, RequireRole, RedirectIfAuthed } from "./components/RouteGuards";
+import AppShell from "./components/layout/AppShell";
 
-function App() {
+import LandingPage from "./pages/landing/LandingPage";
+import LoginPage from "./pages/auth/LoginPage";
+import RegisterPage from "./pages/auth/RegisterPage";
+import PendingApprovalPage from "./pages/auth/PendingApprovalPage";
+
+import DashboardPage from "./pages/app/DashboardPage";
+import PalletReportPage from "./pages/app/PalletReportPage";
+import ForkliftReportPage from "./pages/app/ForkliftReportPage";
+import HistoryPage from "./pages/app/HistoryPage";
+import AccessRequestsPage from "./pages/app/admin/AccessRequestsPage";
+import UsersPage from "./pages/app/admin/UsersPage";
+
+export default function App() {
   return (
     <BrowserRouter>
-      <Layout />
+      <AuthProvider>
+        <Routes>
+          {/* Públicas */}
+          <Route path="/" element={<LandingPage />} />
+          <Route
+            path="/login"
+            element={
+              <RedirectIfAuthed>
+                <LoginPage />
+              </RedirectIfAuthed>
+            }
+          />
+          <Route
+            path="/registro"
+            element={
+              <RedirectIfAuthed>
+                <RegisterPage />
+              </RedirectIfAuthed>
+            }
+          />
+          <Route path="/aguardando-aprovacao" element={<PendingApprovalPage />} />
+
+          {/* Autenticadas */}
+          <Route element={<RequireAuth />}>
+            <Route element={<AppShell />}>
+              <Route path="/app" element={<DashboardPage />} />
+              <Route path="/app/paleteira" element={<PalletReportPage />} />
+              <Route path="/app/empilhadeira" element={<ForkliftReportPage />} />
+              <Route path="/app/historico" element={<HistoryPage />} />
+
+              <Route element={<RequireRole role="ADMIN" />}>
+                <Route path="/app/admin/solicitacoes" element={<AccessRequestsPage />} />
+                <Route path="/app/admin/usuarios" element={<UsersPage />} />
+              </Route>
+            </Route>
+          </Route>
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   );
 }
-
-function Layout() {
-  const location = useLocation();
-
-  // se estiver na home ("/"), não renderiza a Topbar
-  const hideTopbar = location.pathname === "/";
-
-  return (
-    <>
-      {!hideTopbar && <Topbar />}
-      <Routes>
-        {/* Tela inicial */}
-        <Route path="/" element={<Home />} />
-
-        {/* Relatórios */}
-        <Route path="/pallet" element={<PalletReport />} />
-        <Route path="/forklift" element={<ForkliftReport />} />
-
-        {/* Histórico */}
-        <Route path="/history" element={<History />} />
-
-        {/* Assinatura remota (opcional) */}
-        <Route path="/sign/:id" element={<SignReport />} />
-      </Routes>
-    </>
-  );
-}
-
-export default App;
