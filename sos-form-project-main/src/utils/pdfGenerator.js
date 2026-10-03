@@ -1,26 +1,27 @@
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import logo from "../assets/sos-logo.png";
 
-interface ReportData {
-  id: string;
-  client: string;
-  city: string;
-  name: string;
-  phone: string;
-  model: string;
-  email: string;
-  defect: string;
-  description: string;
-  loan: string;
-  loanModel: string;
-  clientSignature: string; // base64 PNG
-  sosSignature: string;    // base64 PNG
-}
+/**
+ * @typedef {Object} ReportData
+ * @property {string} id
+ * @property {string} client
+ * @property {string} city
+ * @property {string} name
+ * @property {string} phone
+ * @property {string} model
+ * @property {string} email
+ * @property {string} defect
+ * @property {string} description
+ * @property {string} loan
+ * @property {string} loanModel
+ * @property {string} clientSignature - base64 PNG
+ * @property {string} sosSignature - base64 PNG
+ */
 
 // Função auxiliar para quebrar linhas
-function wrapText(text: string, font: any, size: number, maxWidth: number) {
+function wrapText(text, font, size, maxWidth) {
   const words = text.split(" ");
-  const lines: string[] = [];
+  const lines = [];
   let currentLine = "";
 
   words.forEach((word) => {
@@ -39,7 +40,10 @@ function wrapText(text: string, font: any, size: number, maxWidth: number) {
   return lines;
 }
 
-export async function generatePalletReportPDF(data: ReportData) {
+/**
+ * @param {ReportData} data
+ */
+export async function generatePalletReportPDF(data) {
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([595, 842]);
   const { height, width } = page.getSize();

@@ -2,9 +2,9 @@ import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import logo from "../assets/sos-logo.png";
 
 // --- Função auxiliar para quebrar linhas ---
-function wrapText(text: string, font: any, size: number, maxWidth: number) {
+function wrapText(text, font, size, maxWidth) {
   const words = text.split(" ");
-  const lines: string[] = [];
+  const lines = [];
   let currentLine = "";
 
   words.forEach((word) => {
@@ -24,7 +24,7 @@ function wrapText(text: string, font: any, size: number, maxWidth: number) {
 }
 
 // --- Gerador de ID exclusivo para Empilhadeira ---
-export function generateForkliftReportId(): string {
+export function generateForkliftReportId() {
   const key = "forklift_id_counter";
   let counter = parseInt(localStorage.getItem(key) || "0", 10);
   counter++;
@@ -32,30 +32,34 @@ export function generateForkliftReportId(): string {
   return counter.toString().padStart(4, "0");
 }
 
-interface ForkliftReportData {
-  id: string;
-  client: string;
-  city: string;
-  call: string;
-  model: string;
-  serial: string;
-  hourMeter: string;
-  defect: string;
-  cause: string;
-  solution: string;
-  services: { name: string; date: string; from: string; to: string; total: string }[];
-  trips: { from: string; to: string; km: string; hours: string; total: string }[];
-  materials: { qty: string; desc: string }[];
-  testDone: string;
-  reason: string;
-  result: string;
-  observation: string;
-  serviceType: string;
-  clientSignature: string;
-  sosSignature: string;
-}
+/**
+ * @typedef {Object} ForkliftReportData
+ * @property {string} id
+ * @property {string} client
+ * @property {string} city
+ * @property {string} call
+ * @property {string} model
+ * @property {string} serial
+ * @property {string} hourMeter
+ * @property {string} defect
+ * @property {string} cause
+ * @property {string} solution
+ * @property {Array<{name: string, date: string, from: string, to: string, total: string}>} services
+ * @property {Array<{from: string, to: string, km: string, hours: string, total: string}>} trips
+ * @property {Array<{qty: string, desc: string}>} materials
+ * @property {string} testDone
+ * @property {string} reason
+ * @property {string} result
+ * @property {string} observation
+ * @property {string} serviceType
+ * @property {string} clientSignature
+ * @property {string} sosSignature
+ */
 
-export async function generateForkliftReportPDF(data: ForkliftReportData) {
+/**
+ * @param {ForkliftReportData} data
+ */
+export async function generateForkliftReportPDF(data) {
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([595, 842]);
   const { height, width } = page.getSize();

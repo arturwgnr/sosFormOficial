@@ -1,22 +1,14 @@
 import { useEffect, useState } from "react";
 import "../css/History.css";
 
-interface Report {
-  id: string;
-  type: "paleteira" | "empilhadeira";
-  client: string;
-  date: string;
-  pdfUrl: string;
-}
-
 export default function History() {
-  const [reports, setReports] = useState<Report[]>([]);
+  const [reports, setReports] = useState([]);
   const [newReport, setNewReport] = useState({
     id: "",
-    type: "paleteira" as "paleteira" | "empilhadeira",
+    type: "paleteira",
     client: "",
     date: "",
-    pdfFile: null as File | null,
+    pdfFile: null,
   });
 
   // Carrega histórico salvo
@@ -28,13 +20,13 @@ export default function History() {
   }, []);
 
   // Salva no localStorage
-  const saveReports = (data: Report[]) => {
+  const saveReports = (data) => {
     localStorage.setItem("reports", JSON.stringify(data));
     setReports(data);
   };
 
   // Upload manual
-  const handleManualAdd = async (e: React.FormEvent) => {
+  const handleManualAdd = async (e) => {
     e.preventDefault();
     if (!newReport.id || !newReport.client || !newReport.date || !newReport.pdfFile) {
       alert("⚠ Preencha todos os campos e envie um PDF.");
@@ -46,9 +38,9 @@ export default function History() {
     const reader = new FileReader();
 
     reader.onloadend = () => {
-      const pdfUrl = reader.result as string;
+      const pdfUrl = reader.result;
 
-      const report: Report = {
+      const report = {
         id: newReport.id,
         type: newReport.type,
         client: newReport.client,
@@ -67,7 +59,7 @@ export default function History() {
     reader.readAsDataURL(file);
   };
 
-  const handleDownload = (url: string, id: string, type: string) => {
+  const handleDownload = (url, id, type) => {
     const link = document.createElement("a");
     link.href = url;
     link.download = `Relatorio-${type}-${id}.pdf`;
@@ -102,7 +94,7 @@ export default function History() {
           <select
             value={newReport.type}
             onChange={(e) =>
-              setNewReport({ ...newReport, type: e.target.value as "paleteira" | "empilhadeira" })
+              setNewReport({ ...newReport, type: e.target.value })
             }
           >
             <option value="paleteira">Paleteira</option>

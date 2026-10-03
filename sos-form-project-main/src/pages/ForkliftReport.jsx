@@ -1,4 +1,4 @@
-vimport { useState } from "react";
+import { useState } from "react";
 import "../css/PalletReport.css";
 import SignaturePad from "../components/SignaturePad";
 import { generateForkliftReportPDF } from "../utils/pdfForkliftGenerator";
@@ -27,33 +27,26 @@ export default function ForkliftReport() {
     sosSignature: "",
   });
 
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [errors, setErrors] = useState({});
 
   // Inputs simples
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   // Inputs dinâmicos (tabelas)
-  const handleArrayChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    index: number,
-    field: string,
-    key: "services" | "trips" | "materials"
-  ) => {
+  const handleArrayChange = (e, index, field, key) => {
     const newArr = [...formData[key]];
     newArr[index] = { ...newArr[index], [field]: e.target.value };
     setFormData((prev) => ({ ...prev, [key]: newArr }));
   };
 
-  const addRow = (key: "services" | "trips" | "materials", row: any) => {
+  const addRow = (key, row) => {
     setFormData((prev) => ({ ...prev, [key]: [...prev[key], row] }));
   };
 
-  const removeRow = (key: "services" | "trips" | "materials", index: number) => {
+  const removeRow = (key, index) => {
     setFormData((prev) => ({
       ...prev,
       [key]: prev[key].filter((_, i) => i !== index),
@@ -61,9 +54,9 @@ export default function ForkliftReport() {
   };
 
   // Submit
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const newErrors: { [key: string]: string } = {};
+    const newErrors = {};
 
     if (!formData.clientSignature)
       newErrors.clientSignature = "Assinatura do cliente obrigatória.";

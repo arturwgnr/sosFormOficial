@@ -2,13 +2,8 @@ import { useRef } from "react";
 import SignatureCanvas from "react-signature-canvas";
 import "../css/SignaturePad.css";
 
-interface SignaturePadProps {
-  onEnd: (dataUrl: string) => void;
-  label: string;
-}
-
-export default function SignaturePad({ onEnd, label }: SignaturePadProps) {
-  const sigCanvas = useRef<SignatureCanvas | null>(null);
+export default function SignaturePad({ onEnd, label }) {
+  const sigCanvas = useRef(null);
 
   const handleClear = () => {
     sigCanvas.current?.clear();

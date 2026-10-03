@@ -20,18 +20,16 @@ export default function PalletReport() {
     sosSignature: "",
   });
 
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [errors, setErrors] = useState({});
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    let newErrors: { [key: string]: string } = {};
+    let newErrors = {};
 
     // validações manuais (loan + assinaturas)
     if (!formData.loan) newErrors.loan = "Selecione uma opção.";
