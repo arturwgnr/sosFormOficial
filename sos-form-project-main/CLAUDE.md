@@ -49,7 +49,7 @@ bloco lógico dentro da etapa), mensagens no padrão
 | 0     | Preparação (git, branch, CLAUDE.md)      | concluída |
 | 1     | Conversão TypeScript para JavaScript     | concluída |
 | 2     | Correção de bugs e reestruturação do PDF | concluída |
-| 3     | Backend (API, banco, autenticação)       | pendente  |
+| 3     | Backend (API, banco, autenticação)       | concluída |
 | 4     | Frontend novo (landing, auth, painel)    | pendente  |
 | 5     | Importação dos relatórios antigos        | pendente  |
 | 6     | Deploy                                   | pendente  |
@@ -103,12 +103,68 @@ bloco lógico dentro da etapa), mensagens no padrão
   scripts de teste de paginação (poucos/muitos itens, texto curto/longo)
   gerando e inspecionando os PDFs reais; arquivos de teste descartados,
   não fazem parte do projeto.
+- 2026-10-03: Etapa 3 concluída. Backend criado em `server/` (Express +
+  Prisma + PostgreSQL via Docker), projeto Node independente do
+  frontend, estrutura de pastas aprovada antes de criar. Banco: `User`
+  (nome, e-mail, senha com `bcryptjs`, papel ADMIN/EMPLOYEE, status
+  PENDING/ACTIVE/BLOCKED, `canViewAllReports`, contador de tentativas de
+  login com bloqueio temporário), `Session` (cookie httpOnly com token
+  aleatório; só o hash fica no banco, permite revogar na hora em logout
+  e bloqueio de conta, sem `express-session` nem JWT), `ReportCounter` +
+  `Report` (ID público por contador atômico por tipo: PAL-0001,
+  EMP-0001; dados do formulário em JSON; assinaturas em colunas
+  próprias; autor e datas). Sem `Client`, como combinado. Rotas:
+  `/api/auth` (register nasce PENDING, login com bloqueio por
+  tentativas e recusa de PENDING/BLOCKED, logout, me), `/api/admin`
+  (listar pendentes/todos, aprovar, recusar que marca BLOCKED - decisão
+  do usuário -, bloquear, editar permissão), `/api/reports` (criar,
+  listar com filtros respeitando permissão, ver um com 403 se não for
+  dono nem tiver permissão). Toda rota valida entrada com `zod`
+  (aprovado pelo usuário) antes do controller. Dependências novas
+  aprovadas pelo usuário: `express`, `cors`, `cookie-parser`, `zod`,
+  `@prisma/client`/`prisma`, e `bcryptjs` no lugar de `bcrypt` (evita
+  falha de compilação nativa no Windows). Sem `dotenv`/`nodemon`: usa
+  `--env-file` e `--watch` nativos do Node 22. Seed cria os 3 admins a
+  partir do `.env` (nunca pela tela). `.env.example` documentado.
+  Corrigido o `.gitignore` da raiz, que não bloqueava `.env` (só
+  `*.local`); agora bloqueia `.env`/`.env.*` e libera `.env.example`.
+  Testado com `server/test/routes.test.mjs` (9 casos) contra o servidor
+  rodando de verdade: registro, PENDING sem acesso, senha errada,
+  bloqueio por tentativas, fluxo completo de aprovação/permissão/
+  bloqueio com acesso cruzado entre usuários negado, rotas de admin
+  negadas para EMPLOYEE, logout invalidando sessão, e-mail duplicado
+  recusado, prefixo de ID por tipo, 404 em relatório inexistente,
+  validação de corpo inválido. Nenhuma mudança no frontend atual (fica
+  para a Etapa 4).
 
 ### Ideias e pendências
 
 - Existe um `CLAUDE.md` idêntico na raiz do repositório
   (`Ragnarok/sosFormOficial/CLAUDE.md`), fora desta pasta de projeto.
   Não foi tocado por estar fora do escopo. Decidir o que fazer com ele.
+- `npm audit` no `server/` acusa 3 vulnerabilidades altas, todas na
+  mesma cadeia: `prisma` (CLI, devDependency) -> `@prisma/config` ->
+  `deepmerge-ts` (exaustão de pilha ao mesclar objetos recursivos). Não
+  afeta o `@prisma/client` em produção, só a ferramenta de linha de
+  comando usada em desenvolvimento. Sem correção disponível na versão
+  mais recente do Prisma ainda. Rever quando o Prisma lançar um patch.
+- `package.json#prisma` (chave usada para configurar o seed) está
+  depreciada a partir do Prisma 7, que vai pedir um arquivo
+  `prisma.config.ts`. Como o projeto é só JavaScript, rever a forma
+  certa de configurar isso quando migrar para o Prisma 7 (ainda não
+  lançado).
+- Sem rota para reativar uma conta BLOCKED (só existem aprovar e
+  bloquear/recusar). Não estava no escopo pedido pela Etapa 3; avaliar
+  se precisa antes ou durante a Etapa 4 (painel do admin).
+- O banco de desenvolvimento local (Postgres no Docker, porta 5434)
+  ficou com dados de teste da suíte `routes.test.mjs` (contas e
+  relatórios descartáveis), a pedido do usuário. Sem efeito em nada
+  commitado; só limpar com `npx prisma migrate reset` se quiser (ação
+  destrutiva, pede confirmação).
+- Porta do Postgres do Docker deste projeto é 5434 (não a padrão 5432):
+  essa máquina já tem um Postgres nativo do Windows ocupando a 5433 e
+  outro container Docker (`innerverse-db`, de outro projeto) ocupando a
+  5432.
 
 ## Identidade visual
 
