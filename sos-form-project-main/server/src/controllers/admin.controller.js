@@ -64,6 +64,16 @@ export const blockUser = asyncHandler(async (req, res) => {
   res.json({ user: toPublicUser(updated) });
 });
 
+// Reativa uma conta BLOCKED (volta pra ACTIVE). Sem isso, bloquear alguém
+// seria uma ação sem volta pela tela.
+export const unblockUser = asyncHandler(async (req, res) => {
+  const user = await findUserOr404(req.params.id, res);
+  if (!user) return;
+
+  const updated = await prisma.user.update({ where: { id: user.id }, data: { status: "ACTIVE" } });
+  res.json({ user: toPublicUser(updated) });
+});
+
 export const updatePermissions = asyncHandler(async (req, res) => {
   const user = await findUserOr404(req.params.id, res);
   if (!user) return;

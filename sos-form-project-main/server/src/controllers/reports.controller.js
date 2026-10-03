@@ -78,6 +78,97 @@ export const listReports = asyncHandler(async (req, res) => {
   res.json({ reports, total, page, pageSize });
 });
 
+const MONTH_LABELS = [
+  "Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez",
+];
+
+const SERVICE_TYPE_KEYS = ["garantia", "contrato", "a faturar"];
+
+// Agregados pro dashboard do admin. Usuário comum nunca chama isto (rota
+// é admin-only), então não precisa filtrar por autor.
+export const getStats = asyncHandler(async (req, res) => {
+  const now = new Date();
+  const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  const nextMonthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+
+  const [byTypeThisMonth, byTechnicianRaw, allReportsForBreakdown, pendingUsersCount] = await Promise.all([
+    prisma.report.groupBy({
+      by: ["type"],
+      where: { createdAt: { gte: monthStart, lt: nextMonthStart } },
+      _count: true,
+    }),
+    prisma.report.groupBy({
+      by: ["authorId"],
+      where: { createdAt: { gte: monthStart, lt: nextMonthStart } },
+      _count: true,
+      orderBy: { _count: { authorId: "desc" } },
+    }),
+    // Só dá pra agregar "cliente" e "tipo de serviço" (dentro do JSON de
+    // dados) em JS: Prisma não agrupa por caminho de JSON no Postgres.
+    prisma.report.findMany({ select: { type: true, data: true } }),
+    prisma.user.count({ where: { status: "PENDING" } }),
+  ]);
+
+  const totalThisMonth = byTypeThisMonth.reduce((sum, row) => sum + row._count, 0);
+  const byType = { PALLET: 0, FORKLIFT: 0 };
+  byTypeThisMonth.forEach((row) => {
+    byType[row.type] = row._count;
+  });
+
+  const authorIds = byTechnicianRaw.map((row) => row.authorId);
+  const authors = authorIds.length
+    ? await prisma.user.findMany({ where: { id: { in: authorIds } }, select: { id: true, name: true } })
+    : [];
+  const authorNameById = new Map(authors.map((a) => [a.id, a.name]));
+  const byTechnician = byTechnicianRaw.map((row) => ({
+    authorId: row.authorId,
+    name: authorNameById.get(row.authorId) || "Desconhecido",
+    count: row._count,
+  }));
+
+  // Série dos últimos 6 meses (incluindo o atual).
+  const monthlySeries = [];
+  for (let i = 5; i >= 0; i--) {
+    const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1));
+    const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i + 1, 1));
+    monthlySeries.push({ start, end, label: MONTH_LABELS[start.getUTCMonth()] });
+  }
+  const monthlyCounts = await Promise.all(
+    monthlySeries.map(({ start, end }) => prisma.report.count({ where: { createdAt: { gte: start, lt: end } } }))
+  );
+  const monthlySeriesResult = monthlySeries.map((m, i) => ({ label: m.label, count: monthlyCounts[i] }));
+
+  const serviceTypeBreakdown = Object.fromEntries(SERVICE_TYPE_KEYS.map((k) => [k, 0]));
+  const clientCounts = new Map();
+  allReportsForBreakdown.forEach((report) => {
+    const client = typeof report.data?.client === "string" ? report.data.client.trim() : "";
+    if (client) clientCounts.set(client, (clientCounts.get(client) || 0) + 1);
+
+    if (report.type === "FORKLIFT") {
+      const serviceType = report.data?.serviceType;
+      if (serviceType && serviceType in serviceTypeBreakdown) {
+        serviceTypeBreakdown[serviceType] += 1;
+      }
+    }
+  });
+
+  const topClients = [...clientCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([client, count]) => ({ client, count }));
+
+  res.json({
+    monthLabel: now.toLocaleDateString("pt-BR", { month: "long", year: "numeric" }),
+    totalThisMonth,
+    byTypeThisMonth: byType,
+    byTechnician,
+    monthlySeries: monthlySeriesResult,
+    serviceTypeBreakdown,
+    topClients,
+    pendingUsersCount,
+  });
+});
+
 export const getReport = asyncHandler(async (req, res) => {
   const report = await prisma.report.findUnique({ where: { id: req.params.id } });
 

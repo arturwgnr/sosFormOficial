@@ -268,3 +268,59 @@ test("validação de entrada recusa corpo inválido", async () => {
   assert.equal(badRegister.status, 400);
   assert.ok(Array.isArray(badRegister.body.issues) && badRegister.body.issues.length > 0);
 });
+
+test("admin reativa conta bloqueada (unblock) e o login volta a funcionar", async () => {
+  const admin = makeClient();
+  await admin.post("/api/auth/login", { email: ADMIN_EMAIL, password: ADMIN_PASSWORD });
+
+  const emp = makeClient();
+  const email = uniqueEmail("unblock");
+  await emp.post("/api/auth/register", { name: "Vai ser bloqueado", email, password: "senha12345" });
+
+  const pendingList = await admin.get("/api/admin/users/pending");
+  const user = pendingList.body.users.find((u) => u.email === email);
+  await admin.post(`/api/admin/users/${user.id}/approve`);
+  await admin.post(`/api/admin/users/${user.id}/block`);
+
+  const loginBlocked = await emp.post("/api/auth/login", { email, password: "senha12345" });
+  assert.equal(loginBlocked.status, 403, "login de conta bloqueada deveria ser recusado");
+
+  const unblockRes = await admin.post(`/api/admin/users/${user.id}/unblock`);
+  assert.equal(unblockRes.status, 200);
+  assert.equal(unblockRes.body.user.status, "ACTIVE", "unblock deveria voltar a conta pra ACTIVE");
+
+  const loginAfterUnblock = await emp.post("/api/auth/login", { email, password: "senha12345" });
+  assert.equal(loginAfterUnblock.status, 200, "depois do unblock, login deveria funcionar de novo");
+
+  // unblock em usuário inexistente -> 404
+  const notFound = await admin.post("/api/admin/users/id-que-nao-existe/unblock");
+  assert.equal(notFound.status, 404);
+});
+
+test("estatísticas do dashboard (/api/reports/stats) são admin-only e têm o formato esperado", async () => {
+  const admin = makeClient();
+  await admin.post("/api/auth/login", { email: ADMIN_EMAIL, password: ADMIN_PASSWORD });
+
+  const emp = makeClient();
+  const email = uniqueEmail("statsemployee");
+  await emp.post("/api/auth/register", { name: "Teste Stats", email, password: "senha12345" });
+  const pendingList = await admin.get("/api/admin/users/pending");
+  const user = pendingList.body.users.find((u) => u.email === email);
+  await admin.post(`/api/admin/users/${user.id}/approve`);
+  await emp.post("/api/auth/login", { email, password: "senha12345" });
+
+  const statsByEmployee = await emp.get("/api/reports/stats");
+  assert.equal(statsByEmployee.status, 403, "funcionário não deveria acessar as estatísticas");
+
+  const statsByAdmin = await admin.get("/api/reports/stats");
+  assert.equal(statsByAdmin.status, 200);
+  const body = statsByAdmin.body;
+  assert.equal(typeof body.totalThisMonth, "number");
+  assert.equal(typeof body.byTypeThisMonth.PALLET, "number");
+  assert.equal(typeof body.byTypeThisMonth.FORKLIFT, "number");
+  assert.ok(Array.isArray(body.byTechnician));
+  assert.ok(Array.isArray(body.monthlySeries) && body.monthlySeries.length === 6);
+  assert.ok("garantia" in body.serviceTypeBreakdown);
+  assert.ok(Array.isArray(body.topClients));
+  assert.equal(typeof body.pendingUsersCount, "number");
+});

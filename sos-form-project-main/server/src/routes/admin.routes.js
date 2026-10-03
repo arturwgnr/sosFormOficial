@@ -8,6 +8,7 @@ import {
   approveUser,
   rejectUser,
   blockUser,
+  unblockUser,
   updatePermissions,
   idParamSchema,
   permissionsSchema,
@@ -24,6 +25,7 @@ router.get("/users", validateQuery(listUsersQuerySchema), listUsers);
 router.post("/users/:id/approve", validateParams(idParamSchema), approveUser);
 router.post("/users/:id/reject", validateParams(idParamSchema), rejectUser);
 router.post("/users/:id/block", validateParams(idParamSchema), blockUser);
+router.post("/users/:id/unblock", validateParams(idParamSchema), unblockUser);
 router.patch(
   "/users/:id/permissions",
   validateParams(idParamSchema),
