@@ -50,7 +50,7 @@ bloco lógico dentro da etapa), mensagens no padrão
 | 1     | Conversão TypeScript para JavaScript     | concluída |
 | 2     | Correção de bugs e reestruturação do PDF | concluída |
 | 3     | Backend (API, banco, autenticação)       | concluída |
-| 4     | Frontend novo (landing, auth, painel)    | pendente  |
+| 4     | Frontend novo (landing, auth, painel)    | concluída |
 | 5     | Importação dos relatórios antigos        | pendente  |
 | 6     | Deploy                                   | pendente  |
 
@@ -136,6 +136,55 @@ bloco lógico dentro da etapa), mensagens no padrão
   recusado, prefixo de ID por tipo, 404 em relatório inexistente,
   validação de corpo inválido. Nenhuma mudança no frontend atual (fica
   para a Etapa 4).
+- 2026-10-03: Etapa 4 concluída. Frontend novo completo. Abordagem
+  aprovada pelo usuário: CSS puro com tokens de design centralizados
+  (`src/styles/tokens.css`), sem framework CSS; `react-router-dom`
+  (já instalado); gráfico do dashboard em SVG feito à mão, sem lib.
+  Fundação: camada de API (`src/api/`, fetch wrapper com
+  `credentials: include`), `AuthContext`/`useAuth` (hook e contexto em
+  arquivos separados por causa da regra do Fast Refresh), `RouteGuards`
+  (`RequireAuth`, `RequireRole`, `RedirectIfAuthed`, só UX), `AppShell`
+  (sidebar fixa no desktop, barra inferior no celular). Fontes Inter e
+  Material Symbols Outlined via Google Fonts, sem dependência nova.
+  Landing page com as seções do CLAUDE.md. Telas de login, registro e
+  aguardando aprovação. Painel por papel: funcionário vê atalhos pros
+  2 formulários, relatórios recentes e total no mês; admin vê banner
+  de pendentes, relatórios no mês por tipo, gráfico por mês, por
+  técnico, serviços por tipo, clientes mais atendidos e últimos
+  relatórios. Os dois formulários (Paleteira/Empilhadeira) e o
+  Histórico foram reescritos: `localStorage` saiu, tudo fala com a
+  API; PDF continua gerado no navegador (pdf-lib) a partir do
+  `publicId` devolvido pela API, nunca armazenado pronto (decisão já
+  tomada no CLAUDE.md). Admin: solicitações de acesso e usuários (com
+  toggle de permissão e bloquear/reativar). Dois endpoints novos no
+  backend, aprovados pelo usuário: `GET /api/reports/stats`
+  (agregados do dashboard do admin) e `POST
+  /api/admin/users/:id/unblock` (reativar conta bloqueada, gap
+  percebido construindo a tela de usuários). Suite de testes do
+  backend ampliada para 11 casos. Substituídos e removidos
+  `Home.jsx`/`Home.css`, `Topbar.jsx`/`Topbar.css`,
+  `PalletReport.jsx`/`ForkliftReport.jsx`/`History.jsx` (antigos) e
+  `idGenerator.js` (confirmado pelo usuário).
+  Verificação visual: sem skill de execução do projeto ainda
+  cadastrada, então rodei o app de verdade com Playwright (headless,
+  instalado só no scratchpad da sessão, fora do projeto) para tirar
+  screenshots reais (desktop e celular, 390px) de todas as telas
+  novas logado como admin e deslogado, e consultar erros de console.
+  Achados e corrigidos 3 bugs visuais reais nesse processo: (1) o
+  gráfico "Relatórios por mês" não aparecia porque o backend manda
+  `{label, count}` e o componente `BarChart` lia `d.value` (ficava
+  `undefined`, virava `NaN%` em CSS, navegador ignorava a altura) -
+  corrigido no `AdminDashboard.jsx`, mapeando `count` para `value`.
+  (2) A pílula "Chega de relatório de papel" no hero da landing
+  esticava a largura inteira (item de grid sem `width` definido,
+  comportamento padrão de stretch) - corrigido com `width: fit-content`.
+  (3) Overflow horizontal real no celular (390px): a grade de 2
+  colunas "Sobre a empresa" (`Contagem/MG`, `Empilhadeiras`) não tinha
+  onde quebrar texto numa coluna estreita - corrigido empilhando em 1
+  coluna abaixo de 420px e reduzindo o tamanho da fonte dos números.
+  Confirmado sem overflow em nenhuma rota testada (`scrollWidth` ===
+  390 em todas). Validado com `npm run build`, `npm run lint` e
+  `npm run test:routes` (11/11) depois de cada ajuste.
 
 ### Ideias e pendências
 
@@ -153,9 +202,6 @@ bloco lógico dentro da etapa), mensagens no padrão
   `prisma.config.ts`. Como o projeto é só JavaScript, rever a forma
   certa de configurar isso quando migrar para o Prisma 7 (ainda não
   lançado).
-- Sem rota para reativar uma conta BLOCKED (só existem aprovar e
-  bloquear/recusar). Não estava no escopo pedido pela Etapa 3; avaliar
-  se precisa antes ou durante a Etapa 4 (painel do admin).
 - O banco de desenvolvimento local (Postgres no Docker, porta 5434)
   ficou com dados de teste da suíte `routes.test.mjs` (contas e
   relatórios descartáveis), a pedido do usuário. Sem efeito em nada
@@ -165,6 +211,19 @@ bloco lógico dentro da etapa), mensagens no padrão
   essa máquina já tem um Postgres nativo do Windows ocupando a 5433 e
   outro container Docker (`innerverse-db`, de outro projeto) ocupando a
   5432.
+- O primeiro commit da Etapa 4 (`feat(server): adiciona estatísticas...`)
+  acabou incluindo também a remoção das páginas antigas (Home, Topbar,
+  PalletReport/ForkliftReport/History antigos, idGenerator): esses
+  `git rm` já estavam no index de uma etapa anterior do trabalho e
+  entraram junto sem eu perceber antes de commitar. Sem problema de
+  conteúdo (nada se perdeu, build/lint/testes passam), só a mensagem
+  do commit não menciona essa parte.
+- Não existe ainda uma skill de execução (`run`) específica deste
+  projeto. Rodei o app manualmente com Playwright nesta sessão
+  (instalado só no scratchpad, fora do repositório) para a verificação
+  visual da Etapa 4. Considerar `/run-skill-generator` para cadastrar
+  os passos (subir Postgres, migrar, seed, `npm run dev` nas duas
+  pastas) como skill reaproveitável nas próximas etapas.
 
 ## Identidade visual
 
