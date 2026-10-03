@@ -8,10 +8,12 @@
   },
   "scripts": {
     "dev": "node --env-file=.env --watch src/server.js",
-    "start": "node --env-file=.env src/server.js",
+    "start": "node src/server.js",
     "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
     "db:generate": "prisma generate",
     "db:seed": "node --env-file=.env prisma/seed.js",
+    "db:seed:prod": "node prisma/seed.js",
     "db:studio": "prisma studio",
     "test:routes": "node --env-file=.env --test test/routes.test.mjs"
   },

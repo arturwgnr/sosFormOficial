@@ -28,6 +28,10 @@ export const env = {
 
   sessionCookieName: process.env.SESSION_COOKIE_NAME || "sos_session",
   sessionTtlDays: int("SESSION_TTL_DAYS", 7),
+  // Só em produção: permite o cookie circular entre subdomínios do mesmo
+  // domínio (ex: sistema.sostranspaletes.com.br e api.sostranspaletes.com.br).
+  // Em dev, fica undefined e o cookie vira host-only (certo pra localhost).
+  cookieDomain: process.env.COOKIE_DOMAIN || undefined,
 
   loginMaxAttempts: int("LOGIN_MAX_ATTEMPTS", 5),
   loginLockoutMinutes: int("LOGIN_LOCKOUT_MINUTES", 15),

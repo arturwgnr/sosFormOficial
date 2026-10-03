@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { hashPassword, comparePassword } from "../utils/password.js";
-import { createSession, revokeSession, sessionCookieOptions } from "../utils/session.js";
+import { createSession, revokeSession, sessionCookieOptions, clearSessionCookie } from "../utils/session.js";
 import { toPublicUser } from "../utils/publicUser.js";
 import { env } from "../config/env.js";
 import { asyncHandler } from "../middleware/errorHandler.js";
@@ -100,7 +100,7 @@ export const login = asyncHandler(async (req, res) => {
 export const logout = asyncHandler(async (req, res) => {
   const token = req.cookies?.[env.sessionCookieName];
   await revokeSession(token);
-  res.clearCookie(env.sessionCookieName);
+  clearSessionCookie(res);
   res.status(204).send();
 });
 

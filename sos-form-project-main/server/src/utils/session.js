@@ -51,12 +51,24 @@ export async function revokeAllSessionsForUser(userId) {
   await prisma.session.deleteMany({ where: { userId } });
 }
 
-export function sessionCookieOptions(expiresAt) {
-  return {
+// Opções compartilhadas entre criar e limpar o cookie: precisam ser
+// idênticas (domain/path/sameSite/secure), senão o navegador não
+// reconhece como o mesmo cookie e o "clearCookie" não funciona de verdade.
+function baseCookieOptions() {
+  const opts = {
     httpOnly: true,
     secure: env.nodeEnv === "production",
     sameSite: "lax",
     path: "/",
-    expires: expiresAt,
   };
+  if (env.cookieDomain) opts.domain = env.cookieDomain;
+  return opts;
+}
+
+export function sessionCookieOptions(expiresAt) {
+  return { ...baseCookieOptions(), expires: expiresAt };
+}
+
+export function clearSessionCookie(res) {
+  res.clearCookie(env.sessionCookieName, baseCookieOptions());
 }
