@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  EMPLOYEE
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  BLOCKED
+}
+
+enum ReportType {
+  PALLET
+  FORKLIFT
+}
+
+model User {
+  id                  String     @id @default(cuid())
+  name                String
+  email               String     @unique
+  passwordHash        String
+  role                Role       @default(EMPLOYEE)
+  status              UserStatus @default(PENDING)
+  // Funcionário só vê os próprios relatórios até um admin ligar isto.
+  canViewAllReports   Boolean    @default(false)
+  failedLoginAttempts Int        @default(0)
+  lockedUntil         DateTime?
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+
+  reports  Report[]
+  sessions Session[]
+}
+
+// Sessão em cookie httpOnly: o navegador guarda o token em claro,
+// o banco guarda só o hash. Permite revogar sessões a qualquer momento
+// (logout, bloqueio de conta) sem depender de expiração de JWT.
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// Contador atômico por tipo, usado para gerar PAL-0001, EMP-0001, ...
+model ReportCounter {
+  type    ReportType @id
+  lastSeq Int        @default(0)
+}
+
+model Report {
+  id       String     @id @default(cuid())
+  publicId String     @unique // PAL-0001 / EMP-0001
+  type     ReportType
+
+  // Campos do formulário (cliente, defeito, tabelas de serviços/viagens/
+  // materiais etc.), que variam por tipo de relatório. As assinaturas
+  // ficam de fora, em colunas próprias.
+  data Json
+
+  clientSignature String? // base64 PNG
+  sosSignature    String? // base64 PNG
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([authorId])
+  @@index([type])
+}

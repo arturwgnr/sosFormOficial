@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: sos_user
+      POSTGRES_PASSWORD: sos_password
+      POSTGRES_DB: sos_transp
+    ports:
+      - "5434:5432"
+    volumes:
+      - sos_transp_pgdata:/var/lib/postgresql/data
+
+volumes:
+  sos_transp_pgdata:
