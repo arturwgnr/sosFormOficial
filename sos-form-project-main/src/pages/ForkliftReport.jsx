@@ -4,30 +4,40 @@ import SignaturePad from "../components/SignaturePad";
 import { generateForkliftReportPDF } from "../utils/pdfForkliftGenerator";
 import { generateForkliftReportId } from "../utils/idGenerator";
 
-export default function ForkliftReport() {
-  const [formData, setFormData] = useState({
-    client: "",
-    city: "",
-    call: "",
-    model: "",
-    serial: "",
-    hourMeter: "",
-    defect: "",
-    cause: "",
-    solution: "",
-    services: [{ name: "", date: "", from: "", to: "", total: "" }],
-    trips: [{ from: "", to: "", km: "", hours: "", total: "" }],
-    materials: [{ qty: "", desc: "" }],
-    testDone: "no",
-    reason: "",
-    result: "positive",
-    observation: "",
-    serviceType: "warranty",
-    clientSignature: "",
-    sosSignature: "",
-  });
+const initialFormData = {
+  client: "",
+  city: "",
+  call: "",
+  model: "",
+  serial: "",
+  hourMeter: "",
+  defect: "",
+  cause: "",
+  solution: "",
+  services: [{ name: "", date: "", from: "", to: "", total: "" }],
+  trips: [{ from: "", to: "", km: "", hours: "", total: "" }],
+  materials: [{ qty: "", desc: "" }],
+  testDone: "no",
+  reason: "",
+  result: "positivo",
+  observation: "",
+  serviceType: "garantia",
+  clientSignature: "",
+  sosSignature: "",
+};
 
+function downloadPdf(pdfUrl, id) {
+  const link = document.createElement("a");
+  link.href = pdfUrl;
+  link.download = `Relatorio-empilhadeira-${id}.pdf`;
+  link.click();
+}
+
+export default function ForkliftReport() {
+  const [formData, setFormData] = useState(initialFormData);
   const [errors, setErrors] = useState({});
+  // Incrementar força o remonte do <form>, limpando também os SignaturePad.
+  const [formKey, setFormKey] = useState(0);
 
   // Inputs simples
   const handleChange = (e) => {
@@ -65,25 +75,32 @@ export default function ForkliftReport() {
 
     setErrors(newErrors);
 
-  if (Object.keys(newErrors).length === 0) {
-  const id = generateForkliftReportId();
-  const pdfUrl = await generateForkliftReportPDF({ ...formData, id });
+    if (Object.keys(newErrors).length === 0) {
+      const id = generateForkliftReportId();
+      const pdfUrl = await generateForkliftReportPDF({ ...formData, id });
 
-  // Salva no histórico
-  const newReport = {
-    id,
-    type: "empilhadeira",
-    client: formData.client,
-    date: new Date().toISOString(),
-    pdfUrl,
-  };
+      // Salva no histórico
+      const newReport = {
+        id,
+        type: "empilhadeira",
+        client: formData.client,
+        date: new Date().toISOString(),
+        pdfUrl,
+      };
 
- const saved = JSON.parse(localStorage.getItem("reports") || "[]");
-saved.push(newReport);
-localStorage.setItem("reports", JSON.stringify(saved));
+      const saved = JSON.parse(localStorage.getItem("reports") || "[]");
+      saved.push(newReport);
+      localStorage.setItem("reports", JSON.stringify(saved));
 
-alert("✅ PDF gerado e salvo no histórico!");
-}
+      downloadPdf(pdfUrl, id);
+
+      // Limpa o formulário (e as assinaturas, via remonte do <form>)
+      setFormData(initialFormData);
+      setErrors({});
+      setFormKey((k) => k + 1);
+
+      alert("✅ PDF gerado, baixado e salvo no histórico!");
+    }
   };
 
   return (
@@ -91,7 +108,7 @@ alert("✅ PDF gerado e salvo no histórico!");
       <div className="report-container">
         <h1>Relatório de Serviço - Empilhadeira</h1>
 
-        <form className="report-form" onSubmit={handleSubmit}>
+        <form key={formKey} className="report-form" onSubmit={handleSubmit}>
           {/* Cabeçalho */}
           <div className="form-row">
             <label>
@@ -199,8 +216,8 @@ alert("✅ PDF gerado e salvo no histórico!");
 
           <div className="form-row">
             <span>Resultado:</span>
-            <label><input type="radio" name="result" value="positivo" checked={formData.result === "positive"} onChange={handleChange}/> Positivo</label>
-            <label><input type="radio" name="result" value="negativo" checked={formData.result === "negative"} onChange={handleChange}/> Negativo</label>
+            <label><input type="radio" name="result" value="positivo" checked={formData.result === "positivo"} onChange={handleChange}/> Positivo</label>
+            <label><input type="radio" name="result" value="negativo" checked={formData.result === "negativo"} onChange={handleChange}/> Negativo</label>
           </div>
 
           <label>

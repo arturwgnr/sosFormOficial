@@ -4,23 +4,33 @@ import SignaturePad from "../components/SignaturePad";
 import { generatePalletReportPDF } from "../utils/pdfGenerator";
 import { generatePalletReportId } from "../utils/idGenerator";
 
-export default function PalletReport() {
-  const [formData, setFormData] = useState({
-    client: "",
-    city: "",
-    name: "",
-    phone: "",
-    model: "",
-    email: "",
-    defect: "",
-    description: "",
-    loan: "",
-    loanModel: "",
-    clientSignature: "",
-    sosSignature: "",
-  });
+const initialFormData = {
+  client: "",
+  city: "",
+  name: "",
+  phone: "",
+  model: "",
+  email: "",
+  defect: "",
+  description: "",
+  loan: "",
+  loanModel: "",
+  clientSignature: "",
+  sosSignature: "",
+};
 
+function downloadPdf(pdfUrl, id) {
+  const link = document.createElement("a");
+  link.href = pdfUrl;
+  link.download = `Relatorio-paleteira-${id}.pdf`;
+  link.click();
+}
+
+export default function PalletReport() {
+  const [formData, setFormData] = useState(initialFormData);
   const [errors, setErrors] = useState({});
+  // Incrementar força o remonte do <form>, limpando também os SignaturePad.
+  const [formKey, setFormKey] = useState(0);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -41,24 +51,31 @@ export default function PalletReport() {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-  const id = generatePalletReportId();
-  const pdfUrl = await generatePalletReportPDF({ ...formData, id });
+      const id = generatePalletReportId();
+      const pdfUrl = await generatePalletReportPDF({ ...formData, id });
 
-  // Salva no histórico
-  const newReport = {
-    id,
-    type: "paleteira",
-    client: formData.client,
-    date: new Date().toISOString(),
-    pdfUrl,
-  };
+      // Salva no histórico
+      const newReport = {
+        id,
+        type: "paleteira",
+        client: formData.client,
+        date: new Date().toISOString(),
+        pdfUrl,
+      };
 
-  const saved = JSON.parse(localStorage.getItem("reports") || "[]");
-saved.push(newReport);
-localStorage.setItem("reports", JSON.stringify(saved));
+      const saved = JSON.parse(localStorage.getItem("reports") || "[]");
+      saved.push(newReport);
+      localStorage.setItem("reports", JSON.stringify(saved));
 
-alert("✅ PDF gerado e salvo no histórico!");
-}
+      downloadPdf(pdfUrl, id);
+
+      // Limpa o formulário (e as assinaturas, via remonte do <form>)
+      setFormData(initialFormData);
+      setErrors({});
+      setFormKey((k) => k + 1);
+
+      alert("✅ PDF gerado, baixado e salvo no histórico!");
+    }
   };
 
   return (
@@ -66,7 +83,7 @@ alert("✅ PDF gerado e salvo no histórico!");
       <div className="report-container">
         <h1>Relatório de Serviço Paleteira</h1>
 
-        <form className="report-form" onSubmit={handleSubmit}>
+        <form key={formKey} className="report-form" onSubmit={handleSubmit}>
           {/* Linha 1 */}
           <div className="form-row">
             <label>
