@@ -38,9 +38,13 @@ Ao concluir cada etapa, o Claude deve:
 2. Adicionar uma linha no "Registro" com data e resumo.
 3. Sugerir a mensagem de commit e a tag git (ex: `etapa-1-concluida`).
 
-Fluxo de git: trabalhar na branch `upgrade-app`, um commit por etapa (ou por
-bloco lógico dentro da etapa), mensagens no padrão
-`tipo: descrição` (feat, fix, refactor, docs, chore).
+Fluxo de git: um commit por etapa (ou por bloco lógico dentro da etapa),
+mensagens no padrão `tipo: descrição` (feat, fix, refactor, docs, chore).
+Trabalhar direto na branch `main` a partir da Etapa 6 (decisão do usuário:
+`main` é a branch observada pelo Render/Cloudflare Pages para o deploy,
+então não faz mais sentido manter `upgrade-app` separada). Etapas 1 a 6
+(ajustes iniciais) foram feitas em `upgrade-app` e mescladas em `main`
+em 2026-10-03.
 
 ### Status das etapas
 
