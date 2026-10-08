@@ -9,19 +9,28 @@ const prisma = new PrismaClient();
 
 async function main() {
   for (const admin of env.admins) {
+    // Mesma normalização do registro/login (zod: trim + toLowerCase); sem
+    // isso, um e-mail com maiúscula no .env viraria conta que nunca loga.
+    const email = admin.email.trim().toLowerCase();
+    const name = admin.name.trim();
     const passwordHash = await hashPassword(admin.password);
 
-    const user = await prisma.user.upsert({
-      where: { email: admin.email },
+    const existing = await prisma.user.findUnique({ where: { email }, select: { id: true } });
+
+    await prisma.user.upsert({
+      where: { email },
       update: {
-        name: admin.name,
+        name,
         passwordHash,
         role: "ADMIN",
         status: "ACTIVE",
+        // Rodar o seed também destrava um admin bloqueado por tentativas.
+        failedLoginAttempts: 0,
+        lockedUntil: null,
       },
       create: {
-        name: admin.name,
-        email: admin.email,
+        name,
+        email,
         passwordHash,
         role: "ADMIN",
         status: "ACTIVE",
@@ -29,7 +38,7 @@ async function main() {
       },
     });
 
-    console.log(`Admin ok: ${user.email}`);
+    console.log(`Admin ${existing ? "atualizado" : "criado"}: ${email}`);
   }
 }
 
