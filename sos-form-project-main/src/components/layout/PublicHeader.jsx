@@ -5,7 +5,6 @@ import "./PublicHeader.css";
 
 const NAV_LINKS = [
   { href: "#funcionalidades", label: "Funcionalidades" },
-  { href: "#como-funciona", label: "Como funciona" },
   { href: "#seguranca", label: "Segurança" },
   { href: "#sobre", label: "Sobre" },
 ];

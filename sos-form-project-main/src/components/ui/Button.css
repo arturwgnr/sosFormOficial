@@ -11,7 +11,8 @@
   white-space: nowrap;
   transition: transform var(--duration-fast) var(--ease-standard),
     box-shadow var(--duration-fast) var(--ease-standard), background var(--duration-fast) var(--ease-standard),
-    border-color var(--duration-fast) var(--ease-standard), opacity var(--duration-fast) var(--ease-standard);
+    border-color var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard),
+    text-shadow var(--duration-fast) var(--ease-standard), opacity var(--duration-fast) var(--ease-standard);
 }
 
 .btn:active:not(:disabled) {
@@ -34,12 +35,12 @@
 
 .btn--accent {
   background: var(--color-accent);
-  color: var(--color-primary-900);
+  color: #fff;
   box-shadow: var(--shadow-accent);
 }
 .btn--accent:hover:not(:disabled) {
   background: var(--color-accent-600);
-  color: #fff;
+  box-shadow: 0 10px 26px rgba(96, 165, 250, 0.5);
 }
 
 .btn--ghost {
@@ -48,8 +49,21 @@
   border-color: var(--color-border-strong);
 }
 .btn--ghost:hover:not(:disabled) {
-  background: var(--slate-100);
-  border-color: var(--slate-400);
+  background: rgba(96, 165, 250, 0.08);
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.35), 0 0 18px rgba(96, 165, 250, 0.45);
+  text-shadow: 0 0 10px rgba(96, 165, 250, 0.55);
+}
+
+/* Ghost sobre fundo escuro (landing): texto branco no repouso */
+.btn--ghost.btn--on-dark {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+.btn--ghost.btn--on-dark:hover:not(:disabled) {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
 }
 
 .btn--danger {

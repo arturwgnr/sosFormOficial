@@ -37,19 +37,11 @@ const FEATURES = [
   },
 ];
 
-const STEPS = [
-  {
-    title: "Preencha no local",
-    description: "Técnico abre o formulário certo (paleteira ou empilhadeira) e registra o atendimento na hora.",
-  },
-  {
-    title: "Colete as assinaturas",
-    description: "Cliente e responsável assinam na tela. Sem impresso, sem perder papel no caminho.",
-  },
-  {
-    title: "Pronto: PDF e histórico",
-    description: "O relatório fica salvo e disponível pra qualquer um com permissão, com o PDF pronto pra baixar.",
-  },
+const ABOUT_STATS = [
+  { icon: "workspace_premium", value: "30+", label: "anos de mercado" },
+  { icon: "location_on", value: "Contagem/MG", label: "atendimento local" },
+  { icon: "pallet", value: "Paleteiras", label: "manutenção e locação" },
+  { icon: "forklift", value: "Empilhadeiras", label: "manutenção e locação" },
 ];
 
 const SECURITY_ITEMS = [
@@ -82,44 +74,110 @@ export default function LandingPage() {
 
       <section className="landing__hero">
         <div className="landing__hero-inner">
-          <span className="landing__hero-badge">
-            <span className="material-symbols-outlined" aria-hidden="true">
-              bolt
+          <div className="landing__hero-copy">
+            <span className="landing__hero-badge">
+              <span className="material-symbols-outlined" aria-hidden="true">
+                bolt
+              </span>
+              Chega de relatório de papel
             </span>
-            Chega de relatório de papel
-          </span>
-          <h1>
-            Relatórios de serviço <span>sem papel</span>, do jeito que sua equipe já trabalha
-          </h1>
-          <p>
-            Sistema interno da SOS Transpaletes para registrar atendimentos de paleteiras e
-            empilhadeiras: formulário, assinatura e PDF, tudo no celular, com histórico
-            centralizado pra empresa inteira.
-          </p>
-          <div className="landing__hero-actions">
-            <Link to="/login">
-              <Button variant="accent" size="lg" icon="login" style={{ color: "#fff" }}>
-                Acessar o sistema
-              </Button>
-            </Link>
-            <Link to="/registro">
-              <Button variant="ghost" size="lg" style={{ color: "#fff", borderColor: "rgba(255,255,255,0.3)" }}>
-                Criar conta
-              </Button>
-            </Link>
+            <h1>
+              Relatórios de serviço <span>sem papel</span>, do jeito que sua equipe já trabalha
+            </h1>
+            <p>
+              Sistema interno da SOS Transpaletes para registrar atendimentos de paleteiras e
+              empilhadeiras: formulário, assinatura e PDF, tudo no celular, com histórico
+              centralizado pra empresa inteira.
+            </p>
+            <div className="landing__hero-actions">
+              <Link to="/login">
+                <Button variant="accent" size="lg" icon="login">
+                  Acessar o sistema
+                </Button>
+              </Link>
+              <Link to="/registro">
+                <Button variant="ghost" size="lg" className="btn--on-dark">
+                  Criar conta
+                </Button>
+              </Link>
+            </div>
+            <div className="landing__hero-stats">
+              <div className="landing__hero-stat">
+                <strong>30+</strong>
+                <span>anos de mercado</span>
+              </div>
+              <div className="landing__hero-stat">
+                <strong>2</strong>
+                <span>tipos de relatório</span>
+              </div>
+              <div className="landing__hero-stat">
+                <strong>100%</strong>
+                <span>digital</span>
+              </div>
+            </div>
           </div>
-          <div className="landing__hero-stats">
-            <div className="landing__hero-stat">
-              <strong>30+</strong>
-              <span>anos de mercado</span>
+
+          {/* Prévia ilustrativa de um relatório: equilibra a composição do hero */}
+          <div className="landing__hero-visual" aria-hidden="true">
+            <div className="hero-report">
+              <div className="hero-report__head">
+                <div>
+                  <span className="hero-report__id">PAL-0042</span>
+                  <strong>Relatório de Paleteira</strong>
+                </div>
+                <span className="hero-report__status">
+                  <span className="material-symbols-outlined">check_circle</span>
+                  Concluído
+                </span>
+              </div>
+
+              <dl className="hero-report__meta">
+                <div>
+                  <dt>Cliente</dt>
+                  <dd>Distribuidora Central</dd>
+                </div>
+                <div>
+                  <dt>Equipamento</dt>
+                  <dd>Paleteira manual 2,5 t</dd>
+                </div>
+              </dl>
+
+              <ul className="hero-report__items">
+                <li>
+                  <span className="material-symbols-outlined">check</span>
+                  Troca do kit de vedação
+                </li>
+                <li>
+                  <span className="material-symbols-outlined">check</span>
+                  Lubrificação geral
+                </li>
+                <li>
+                  <span className="material-symbols-outlined">check</span>
+                  Teste de carga aprovado
+                </li>
+              </ul>
+
+              <div className="hero-report__sign">
+                <svg viewBox="0 0 160 40" fill="none">
+                  <path
+                    d="M4 30c10-18 18-22 22-12s-4 16 4 8 12-20 18-14-2 18 6 12 10-14 16-10 4 10 12 6 14-12 22-8 10 6 20 2 20-6 30-6"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <span>Assinatura do cliente</span>
+              </div>
             </div>
-            <div className="landing__hero-stat">
-              <strong>2</strong>
-              <span>tipos de relatório</span>
+
+            <div className="hero-chip hero-chip--pdf">
+              <span className="material-symbols-outlined">picture_as_pdf</span>
+              PDF pronto
             </div>
-            <div className="landing__hero-stat">
-              <strong>100%</strong>
-              <span>digital</span>
+            <div className="hero-chip hero-chip--sync">
+              <span className="material-symbols-outlined">cloud_done</span>
+              Salvo no histórico
             </div>
           </div>
         </div>
@@ -226,28 +284,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="landing__section" id="como-funciona">
-        <div className="landing__section-inner">
-          <span className="landing__eyebrow">
-            <span className="material-symbols-outlined" aria-hidden="true">
-              route
-            </span>
-            Como funciona
-          </span>
-          <h2 className="landing__section-title">Do atendimento ao relatório pronto, em 3 passos</h2>
-
-          <div className="landing__steps">
-            {STEPS.map((s, i) => (
-              <div className="landing__step" key={s.title}>
-                <div className="landing__step-number">{i + 1}</div>
-                <h3>{s.title}</h3>
-                <p>{s.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       <section className="landing__section landing__section--security" id="seguranca">
         <div className="landing__section-inner">
           <span className="landing__eyebrow" style={{ color: "var(--color-accent)" }}>
@@ -277,7 +313,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="landing__section" id="sobre">
+      <section className="landing__section landing__section--closing" id="sobre">
         <div className="landing__section-inner">
           <div className="landing__about">
             <div>
@@ -295,42 +331,35 @@ export default function LandingPage() {
               </p>
             </div>
             <div className="landing__about-stats">
-              <div className="landing__about-stat">
-                <strong>30+</strong>
-                <span>anos de mercado</span>
-              </div>
-              <div className="landing__about-stat">
-                <strong>Contagem/MG</strong>
-                <span>atendimento local</span>
-              </div>
-              <div className="landing__about-stat">
-                <strong>Paleteiras</strong>
-                <span>manutenção e locação</span>
-              </div>
-              <div className="landing__about-stat">
-                <strong>Empilhadeiras</strong>
-                <span>manutenção e locação</span>
-              </div>
+              {ABOUT_STATS.map((s) => (
+                <div className="landing__about-stat" key={s.value}>
+                  <span className="material-symbols-outlined landing__about-stat-icon" aria-hidden="true">
+                    {s.icon}
+                  </span>
+                  <strong>{s.value}</strong>
+                  <span>{s.label}</span>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
-      </section>
 
-      <section className="landing__section">
-        <div className="landing__cta">
-          <h2>Pronto para tirar o relatório do papel?</h2>
-          <p>Acesse com sua conta ou peça cadastro: a aprovação é rápida.</p>
-          <div className="landing__cta-actions">
-            <Link to="/login">
-              <Button variant="accent" size="lg" icon="login" style={{ color: "#fff" }}>
-                Acessar o sistema
-              </Button>
-            </Link>
-            <Link to="/registro">
-              <Button variant="ghost" size="lg" style={{ color: "#fff", borderColor: "rgba(255,255,255,0.3)" }}>
-                Criar conta
-              </Button>
-            </Link>
+          <div className="landing__cta">
+            <div className="landing__cta-text">
+              <h2>Pronto para tirar o relatório do papel?</h2>
+              <p>Acesse com sua conta ou peça cadastro: a aprovação é rápida.</p>
+            </div>
+            <div className="landing__cta-actions">
+              <Link to="/login">
+                <Button variant="accent" size="lg" icon="login">
+                  Acessar o sistema
+                </Button>
+              </Link>
+              <Link to="/registro">
+                <Button variant="ghost" size="lg" className="btn--on-dark">
+                  Criar conta
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
