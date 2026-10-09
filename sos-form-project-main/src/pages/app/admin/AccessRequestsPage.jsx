@@ -5,6 +5,7 @@ import EmptyState from "../../../components/ui/EmptyState";
 import Spinner from "../../../components/ui/Spinner";
 import Alert from "../../../components/ui/Alert";
 import { adminApi } from "../../../api/admin";
+import { useToast } from "../../../context/useToast";
 import { formatDateTime } from "../../../utils/reportLabels";
 import "./AdminPages.css";
 
@@ -12,6 +13,7 @@ export default function AccessRequestsPage() {
   const [users, setUsers] = useState(null);
   const [error, setError] = useState("");
   const [busyId, setBusyId] = useState(null);
+  const toast = useToast();
 
   function load() {
     adminApi
@@ -22,15 +24,27 @@ export default function AccessRequestsPage() {
 
   useEffect(load, []);
 
-  async function handleDecision(id, action) {
-    setBusyId(id);
-    setError("");
+  async function handleDecision(user, action) {
+    setBusyId(user.id);
     try {
-      if (action === "approve") await adminApi.approve(id);
-      else await adminApi.reject(id);
-      setUsers((prev) => prev.filter((u) => u.id !== id));
+      if (action === "approve") {
+        await adminApi.approve(user.id);
+        toast.success("Acesso aprovado", {
+          description: `${user.name} já pode entrar no sistema.`,
+          sound: "approve",
+        });
+      } else {
+        await adminApi.reject(user.id);
+        toast.warning("Cadastro recusado", {
+          description: `${user.name} não terá acesso ao sistema.`,
+          sound: "reject",
+        });
+      }
+      setUsers((prev) => prev.filter((u) => u.id !== user.id));
     } catch {
-      setError("Não foi possível completar a ação.");
+      toast.error("Não foi possível completar a ação", {
+        description: "Verifique sua conexão e tente novamente.",
+      });
     } finally {
       setBusyId(null);
     }
@@ -64,7 +78,7 @@ export default function AccessRequestsPage() {
                   size="sm"
                   icon="close"
                   loading={busyId === u.id}
-                  onClick={() => handleDecision(u.id, "reject")}
+                  onClick={() => handleDecision(u, "reject")}
                 >
                   Recusar
                 </Button>
@@ -73,7 +87,7 @@ export default function AccessRequestsPage() {
                   size="sm"
                   icon="check"
                   loading={busyId === u.id}
-                  onClick={() => handleDecision(u.id, "approve")}
+                  onClick={() => handleDecision(u, "approve")}
                 >
                   Aprovar
                 </Button>

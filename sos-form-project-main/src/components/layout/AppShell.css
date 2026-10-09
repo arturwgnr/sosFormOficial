@@ -254,9 +254,17 @@
   .app-shell__mobile-menu {
     display: none;
   }
+  /* Centraliza o conteúdo na área à direita da sidebar (antes ficava preso
+     à esquerda, com sobra em branco na direita em telas largas). */
   .app-shell__content {
+    --shell-content-max: var(--content-max-width);
     margin-left: var(--sidebar-width);
+    max-width: none;
     padding: var(--space-8) var(--space-10);
     padding-top: var(--space-10);
+    padding-inline: max(var(--space-10), calc((100vw - var(--sidebar-width) - var(--shell-content-max)) / 2));
+  }
+  .app-shell__content--wide {
+    --shell-content-max: 1680px;
   }
 }

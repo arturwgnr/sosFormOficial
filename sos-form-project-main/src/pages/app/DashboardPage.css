@@ -103,8 +103,47 @@
 .admin-dashboard__grid {
   display: grid;
   gap: var(--space-6);
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   margin-top: var(--space-6);
+}
+.admin-dashboard__grid > .card {
+  min-width: 0;
+}
+.admin-dashboard__empty {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+/* Card de lista: cabeçalho com padding próprio e link para o histórico */
+.admin-dashboard__card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-5) 0;
+}
+.admin-dashboard__card-head .section-title {
+  margin-bottom: var(--space-3);
+}
+.admin-dashboard__card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: var(--space-3);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--color-accent-700);
+  white-space: nowrap;
+  transition: gap var(--duration-fast) var(--ease-standard);
+}
+.admin-dashboard__card-link:hover {
+  gap: var(--space-2);
+}
+.admin-dashboard__card-link .material-symbols-outlined {
+  font-size: 1rem;
+}
+.admin-dashboard__recent .dashboard-list {
+  border-top: 1px solid var(--color-border);
 }
 
 .admin-dashboard__pending-banner {
@@ -175,7 +214,46 @@
   .employee-dashboard__shortcuts {
     grid-template-columns: repeat(2, 1fr);
   }
+  /* Desktop médio: 2 colunas; gráfico ocupa a linha inteira */
   .admin-dashboard__grid {
-    grid-template-columns: 1.4fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  /* Muitos técnicos não esticam a linha do grid: lista rola por dentro */
+  .admin-dashboard__technicians .breakdown-list {
+    max-height: 236px;
+    overflow-y: auto;
+    padding-right: var(--space-2);
+    scrollbar-width: thin;
+  }
+  .admin-dashboard__chart {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Telas largas: grid de 12 colunas usando a largura toda */
+@media (min-width: 1360px) {
+  .admin-dashboard__grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+  .admin-dashboard__chart {
+    grid-column: span 8;
+  }
+  /* No HTML os técnicos vêm depois da lista (ordem do celular);
+     aqui sobem para dividir a primeira linha com o gráfico. */
+  .admin-dashboard__technicians {
+    grid-column: span 4;
+    order: -1;
+  }
+  .admin-dashboard__chart {
+    order: -2;
+  }
+  /* Lista ocupa 2 linhas; serviços e clientes empilham ao lado dela */
+  .admin-dashboard__recent {
+    grid-column: span 7;
+    grid-row: span 2;
+  }
+  .admin-dashboard__services,
+  .admin-dashboard__clients {
+    grid-column: span 5;
   }
 }

@@ -83,115 +83,117 @@ export default function AdminDashboard() {
         <StatCard icon="group" label="Solicitações pendentes" value={stats.pendingUsersCount} tone="warning" />
       </div>
 
+      {/* Cada card é item direto do grid: 1 coluna no celular (nesta ordem),
+          2 no desktop médio e 12 colunas em telas largas (ver DashboardPage.css). */}
       <div className="admin-dashboard__grid">
-        <div>
-          <div className="card card--padded" style={{ marginBottom: "var(--space-6)" }}>
-            <h2 className="section-title">Relatórios por mês</h2>
-            <BarChart
-              data={stats.monthlySeries.map((m) => ({ label: m.label, value: m.count }))}
-              height={180}
-            />
-          </div>
+        <section className="card card--padded admin-dashboard__chart">
+          <h2 className="section-title">Relatórios por mês</h2>
+          <BarChart
+            data={stats.monthlySeries.map((m) => ({ label: m.label, value: m.count }))}
+            height={220}
+          />
+        </section>
 
-          <h2 className="section-title">Últimos relatórios criados</h2>
-          <div className="card">
-            {recent === null ? (
-              <div style={{ padding: "var(--space-8)", textAlign: "center" }}>
-                <Spinner size={24} />
-              </div>
-            ) : recent.length === 0 ? (
-              <EmptyState icon="description" title="Nenhum relatório ainda" />
-            ) : (
-              <ul className="dashboard-list">
-                {recent.map((r) => (
-                  <li key={r.id} className="dashboard-list__item">
-                    <div className="dashboard-list__icon">
-                      <span className="material-symbols-outlined" aria-hidden="true">
-                        {REPORT_TYPE_ICON[r.type]}
-                      </span>
-                    </div>
-                    <div className="dashboard-list__info">
-                      <strong>{r.data?.client || "Sem cliente informado"}</strong>
-                      <span>
-                        {r.publicId} · {REPORT_TYPE_LABEL[r.type]}
-                      </span>
-                    </div>
-                    <span className="dashboard-list__meta">{formatDate(r.createdAt)}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
+        <section className="card admin-dashboard__recent">
+          <div className="admin-dashboard__card-head">
+            <h2 className="section-title">Últimos relatórios criados</h2>
+            <Link to="/app/historico" className="admin-dashboard__card-link">
+              Ver histórico
+              <span className="material-symbols-outlined" aria-hidden="true">
+                arrow_forward
+              </span>
+            </Link>
           </div>
-        </div>
-
-        <div>
-          <div className="card card--padded" style={{ marginBottom: "var(--space-6)" }}>
-            <h2 className="section-title">Relatórios por técnico (mês)</h2>
-            {stats.byTechnician.length === 0 ? (
-              <p style={{ fontSize: "var(--text-sm)", color: "var(--color-text-muted)" }}>
-                Nenhum relatório este mês.
-              </p>
-            ) : (
-              <div className="breakdown-list">
-                {stats.byTechnician.map((t) => (
-                  <div className="breakdown-row" key={t.authorId}>
-                    <span className="breakdown-row__label" title={t.name} style={{ textTransform: "none" }}>
-                      {t.name}
+          {recent === null ? (
+            <div style={{ padding: "var(--space-8)", textAlign: "center" }}>
+              <Spinner size={24} />
+            </div>
+          ) : recent.length === 0 ? (
+            <EmptyState icon="description" title="Nenhum relatório ainda" />
+          ) : (
+            <ul className="dashboard-list">
+              {recent.map((r) => (
+                <li key={r.id} className="dashboard-list__item">
+                  <div className="dashboard-list__icon">
+                    <span className="material-symbols-outlined" aria-hidden="true">
+                      {REPORT_TYPE_ICON[r.type]}
                     </span>
-                    <div className="breakdown-row__track">
-                      <div
-                        className="breakdown-row__fill"
-                        style={{ width: `${(t.count / maxTechnicianCount) * 100}%` }}
-                      />
-                    </div>
-                    <span className="breakdown-row__value">{t.count}</span>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
+                  <div className="dashboard-list__info">
+                    <strong>{r.data?.client || "Sem cliente informado"}</strong>
+                    <span>
+                      {r.publicId} · {REPORT_TYPE_LABEL[r.type]}
+                    </span>
+                  </div>
+                  <span className="dashboard-list__meta">{formatDate(r.createdAt)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
 
-          <div className="card card--padded" style={{ marginBottom: "var(--space-6)" }}>
-            <h2 className="section-title">Serviços por tipo (empilhadeira)</h2>
+        <section className="card card--padded admin-dashboard__technicians">
+          <h2 className="section-title">Relatórios por técnico (mês)</h2>
+          {stats.byTechnician.length === 0 ? (
+            <p className="admin-dashboard__empty">Nenhum relatório este mês.</p>
+          ) : (
             <div className="breakdown-list">
-              {Object.entries(stats.serviceTypeBreakdown).map(([key, count]) => (
-                <div className="breakdown-row" key={key}>
-                  <span className="breakdown-row__label">{key}</span>
+              {stats.byTechnician.map((t) => (
+                <div className="breakdown-row" key={t.authorId}>
+                  <span className="breakdown-row__label" title={t.name} style={{ textTransform: "none" }}>
+                    {t.name}
+                  </span>
                   <div className="breakdown-row__track">
                     <div
                       className="breakdown-row__fill"
-                      style={{ width: `${(count / maxServiceTypeCount) * 100}%` }}
+                      style={{ width: `${(t.count / maxTechnicianCount) * 100}%` }}
                     />
                   </div>
-                  <span className="breakdown-row__value">{count}</span>
+                  <span className="breakdown-row__value">{t.count}</span>
                 </div>
               ))}
             </div>
-          </div>
+          )}
+        </section>
 
-          <div className="card card--padded">
-            <h2 className="section-title">Clientes mais atendidos</h2>
-            {stats.topClients.length === 0 ? (
-              <p style={{ fontSize: "var(--text-sm)", color: "var(--color-text-muted)" }}>
-                Nenhum relatório com cliente informado ainda.
-              </p>
-            ) : (
-              <div className="breakdown-list">
-                {stats.topClients.map((c) => (
-                  <div className="breakdown-row" key={c.client}>
-                    <span className="breakdown-row__label" title={c.client} style={{ textTransform: "none" }}>
-                      {c.client}
-                    </span>
-                    <div className="breakdown-row__track">
-                      <div className="breakdown-row__fill" style={{ width: `${(c.count / maxClientCount) * 100}%` }} />
-                    </div>
-                    <span className="breakdown-row__value">{c.count}</span>
-                  </div>
-                ))}
+        <section className="card card--padded admin-dashboard__services">
+          <h2 className="section-title">Serviços por tipo (empilhadeira)</h2>
+          <div className="breakdown-list">
+            {Object.entries(stats.serviceTypeBreakdown).map(([key, count]) => (
+              <div className="breakdown-row" key={key}>
+                <span className="breakdown-row__label">{key}</span>
+                <div className="breakdown-row__track">
+                  <div
+                    className="breakdown-row__fill"
+                    style={{ width: `${(count / maxServiceTypeCount) * 100}%` }}
+                  />
+                </div>
+                <span className="breakdown-row__value">{count}</span>
               </div>
-            )}
+            ))}
           </div>
-        </div>
+        </section>
+
+        <section className="card card--padded admin-dashboard__clients">
+          <h2 className="section-title">Clientes mais atendidos</h2>
+          {stats.topClients.length === 0 ? (
+            <p className="admin-dashboard__empty">Nenhum relatório com cliente informado ainda.</p>
+          ) : (
+            <div className="breakdown-list">
+              {stats.topClients.map((c) => (
+                <div className="breakdown-row" key={c.client}>
+                  <span className="breakdown-row__label" title={c.client} style={{ textTransform: "none" }}>
+                    {c.client}
+                  </span>
+                  <div className="breakdown-row__track">
+                    <div className="breakdown-row__fill" style={{ width: `${(c.count / maxClientCount) * 100}%` }} />
+                  </div>
+                  <span className="breakdown-row__value">{c.count}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
       </div>
     </div>
   );

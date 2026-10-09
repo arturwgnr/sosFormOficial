@@ -1,36 +1,34 @@
-# Updates: ajustes de layout e design (rodada 2)
+# Updates: dashboard
 
 Data: 2026-10-08
 Status: concluído
 
-## Geral
+## Feedback de ações
 
-- [x] Revisar o `.gitignore` e garantir que ficam fora do commit:
-      arquivos sensíveis e gerados (`.env` em todas as pastas,
-      `node_modules`, `dist`, logs) e os itens que eu já adicionei nele
-- [x] Verificar se algum desses arquivos já foi commitado antes. Se sim,
-      remover do rastreamento (sem apagar do disco) e me avisar,
-      principalmente se for algum `.env`
+- [x] Toaster (notificação flutuante) ao aprovar e ao recusar usuários
+- [x] Visual do toaster alinhado ao restante do sistema: cores da
+      identidade, fonte Inter, ícones Material Symbols, animação suave
+      de entrada e saída. Variações para sucesso, erro e aviso
+- [x] Efeito sonoro curto e discreto na aprovação e na recusa (sons
+      diferentes para cada uma)
+- [x] Toaster reutilizável para outras ações do sistema no futuro
 
-## Layout
+## Layout desktop
 
-- [x] Cada seção da landing ocupa no mínimo a altura total da tela
-      (`min-height` com `100svh`, para funcionar bem no celular)
-- [x] Rolagem suave entre seções, sem travar ou "prender" o scroll
-- [x] Remover a seção "Como funciona"
+- [x] Reorganizar o dashboard no computador: hoje sobra espaço em branco
+      na direita e a centralização ficou ruim
+- [x] Usar a largura da tela com um grid bem distribuído (cards, gráfico
+      e listas), mantendo a versão celular como está
 
-## Design
+## Dados de teste (somente banco LOCAL)
 
-- [x] Hero (`.landing__hero`): reposicionar o conteúdo, um dos lados está
-      vazio demais. Deixar a composição equilibrada e mais bonita
-- [x] Botões ghost (`.btn.btn--ghost.btn--lg`): no hover, texto e borda
-      ficam azul neon #60a5fa (hoje ficam brancos)
-- [x] Seções "Sobre a SOS Transpaletes" e "Pronto para tirar o relatório
-      do papel?": melhorar o visual, juntas elas estão destoando
-- [x] Login e Registro: as telas continuam com a estética quebrada.
-      Refazer seguindo o padrão premium do CLAUDE.md
+- [x] Apagar todos os usuários de teste, mantendo apenas os 3 admins
+      do .env
+- [x] Antes de apagar, listar os usuários que serão removidos e o que
+      acontece com relatórios criados por eles, e esperar confirmação
+- [x] Apagar testes relatorios
 
 ## Critério de conclusão
 
-Todos os itens testados no desktop e no modo celular (F12), com a
-rolagem fluida nos dois.
+Toaster e sons testados nas duas ações, dashboard conferido no desktop
+e no modo celular (F12), e banco local apenas com os 3 admins.

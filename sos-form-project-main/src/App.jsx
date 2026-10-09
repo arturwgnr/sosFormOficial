@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import { ToastProvider } from "./context/ToastProvider";
 import { RequireAuth, RequireRole, RedirectIfAuthed } from "./components/RouteGuards";
 import AppShell from "./components/layout/AppShell";
 
@@ -19,42 +20,44 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Routes>
-          {/* Públicas */}
-          <Route path="/" element={<LandingPage />} />
-          <Route
-            path="/login"
-            element={
-              <RedirectIfAuthed>
-                <LoginPage />
-              </RedirectIfAuthed>
-            }
-          />
-          <Route
-            path="/registro"
-            element={
-              <RedirectIfAuthed>
-                <RegisterPage />
-              </RedirectIfAuthed>
-            }
-          />
-          <Route path="/aguardando-aprovacao" element={<PendingApprovalPage />} />
+        <ToastProvider>
+          <Routes>
+            {/* Públicas */}
+            <Route path="/" element={<LandingPage />} />
+            <Route
+              path="/login"
+              element={
+                <RedirectIfAuthed>
+                  <LoginPage />
+                </RedirectIfAuthed>
+              }
+            />
+            <Route
+              path="/registro"
+              element={
+                <RedirectIfAuthed>
+                  <RegisterPage />
+                </RedirectIfAuthed>
+              }
+            />
+            <Route path="/aguardando-aprovacao" element={<PendingApprovalPage />} />
 
-          {/* Autenticadas */}
-          <Route element={<RequireAuth />}>
-            <Route element={<AppShell />}>
-              <Route path="/app" element={<DashboardPage />} />
-              <Route path="/app/paleteira" element={<PalletReportPage />} />
-              <Route path="/app/empilhadeira" element={<ForkliftReportPage />} />
-              <Route path="/app/historico" element={<HistoryPage />} />
+            {/* Autenticadas */}
+            <Route element={<RequireAuth />}>
+              <Route element={<AppShell />}>
+                <Route path="/app" element={<DashboardPage />} />
+                <Route path="/app/paleteira" element={<PalletReportPage />} />
+                <Route path="/app/empilhadeira" element={<ForkliftReportPage />} />
+                <Route path="/app/historico" element={<HistoryPage />} />
 
-              <Route element={<RequireRole role="ADMIN" />}>
-                <Route path="/app/admin/solicitacoes" element={<AccessRequestsPage />} />
-                <Route path="/app/admin/usuarios" element={<UsersPage />} />
+                <Route element={<RequireRole role="ADMIN" />}>
+                  <Route path="/app/admin/solicitacoes" element={<AccessRequestsPage />} />
+                  <Route path="/app/admin/usuarios" element={<UsersPage />} />
+                </Route>
               </Route>
             </Route>
-          </Route>
-        </Routes>
+          </Routes>
+        </ToastProvider>
       </AuthProvider>
     </BrowserRouter>
   );

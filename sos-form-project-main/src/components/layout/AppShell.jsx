@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 import logo from "../../assets/sos-logo.png";
 import "./AppShell.css";
@@ -19,6 +19,9 @@ const ADMIN_NAV = [
 export default function AppShell() {
   const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  // O painel usa a largura da tela no desktop; formulários e listas
+  // mantêm a largura de leitura padrão.
+  const isWide = useLocation().pathname === "/app";
   const navItems = user?.role === "ADMIN" ? [...MAIN_NAV, ...ADMIN_NAV] : MAIN_NAV;
   // Bottom nav do celular só cabe ~5 ícones: prioriza os mais usados em campo.
   const bottomNavItems = MAIN_NAV;
@@ -122,7 +125,7 @@ export default function AppShell() {
         </div>
       )}
 
-      <main className="app-shell__content">
+      <main className={`app-shell__content ${isWide ? "app-shell__content--wide" : ""}`}>
         <Outlet />
       </main>
 
