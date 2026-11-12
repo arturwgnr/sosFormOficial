@@ -45,7 +45,7 @@ export default function PublicFooter() {
       </div>
 
       <div className="public-footer__bottom">
-        <span>© {year} SOS Transpaletes. Todos os direitos reservados.</span>
+        <span>© {year} Artur Wagner. Todos os direitos reservados.</span>
       </div>
     </footer>
   );
