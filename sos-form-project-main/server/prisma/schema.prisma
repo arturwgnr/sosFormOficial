@@ -34,6 +34,10 @@ model User {
   canViewAllReports   Boolean    @default(false)
   failedLoginAttempts Int        @default(0)
   lockedUntil         DateTime?
+  // Limite de tentativas da senha de ações administrativas (remover
+  // usuário etc.), separado do login. Só usado em contas ADMIN.
+  adminActionFailedAttempts Int       @default(0)
+  adminActionLockedUntil    DateTime?
   createdAt           DateTime   @default(now())
   updatedAt           DateTime   @updatedAt
 
@@ -74,8 +78,13 @@ model Report {
   clientSignature String? // base64 PNG
   sosSignature    String? // base64 PNG
 
-  authorId String
-  author   User   @relation(fields: [authorId], references: [id])
+  // Opcional: quando um usuário é removido, os relatórios dele ficam
+  // (são registros da empresa) e o vínculo vira null.
+  authorId   String?
+  author     User?   @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  // Cópia do nome do técnico no momento da criação. Continua mostrando
+  // quem fez o relatório mesmo depois que o usuário é removido.
+  authorName String  @default("")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

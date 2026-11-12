@@ -36,6 +36,7 @@ function makeClient() {
     get: (path) => request("GET", path),
     post: (path, body) => request("POST", path, body),
     patch: (path, body) => request("PATCH", path, body),
+    del: (path, body) => request("DELETE", path, body),
   };
 }
 
@@ -323,4 +324,116 @@ test("estatísticas do dashboard (/api/reports/stats) são admin-only e têm o f
   assert.ok("garantia" in body.serviceTypeBreakdown);
   assert.ok(Array.isArray(body.topClients));
   assert.equal(typeof body.pendingUsersCount, "number");
+});
+
+// --- Remoção de usuário (ação administrativa com senha) ---
+// Precisa de TEST_ADMIN_ACTIONS_PASSWORD (a senha em texto cujo hash está
+// em ADMIN_ACTIONS_PASSWORD_HASH no servidor sob teste).
+const ACTIONS_PASSWORD = process.env.TEST_ADMIN_ACTIONS_PASSWORD;
+
+async function loginAs(email, password) {
+  const client = makeClient();
+  const res = await client.post("/api/auth/login", { email, password });
+  assert.equal(res.status, 200, `login de ${email} deveria funcionar`);
+  return { client, user: res.body.user };
+}
+
+async function createActiveEmployee(admin, label) {
+  const emp = makeClient();
+  const email = uniqueEmail(label);
+  const name = `Técnico ${label}`;
+  await emp.post("/api/auth/register", { name, email, password: "senha12345" });
+  const pending = await admin.get("/api/admin/users/pending");
+  const user = pending.body.users.find((u) => u.email === email);
+  await admin.post(`/api/admin/users/${user.id}/approve`);
+  const login = await emp.post("/api/auth/login", { email, password: "senha12345" });
+  assert.equal(login.status, 200);
+  return { emp, user, name, email };
+}
+
+test("remover usuário: senha errada recusa, senha certa remove e os relatórios ficam com o nome do técnico", async () => {
+  assert.ok(ACTIONS_PASSWORD, "defina TEST_ADMIN_ACTIONS_PASSWORD no ambiente do teste");
+  const { client: admin } = await loginAs(ADMIN_EMAIL, ADMIN_PASSWORD);
+  const { emp, user, name } = await createActiveEmployee(admin, "removivel");
+
+  const created = await emp.post("/api/reports", { type: "FORKLIFT", data: { client: "Cliente Remoção" } });
+  assert.equal(created.status, 201);
+  assert.equal(created.body.report.authorName, name, "relatório grava o nome do técnico");
+  const reportId = created.body.report.id;
+
+  // sem senha -> 400 (validação)
+  const noPassword = await admin.del(`/api/admin/users/${user.id}`, {});
+  assert.equal(noPassword.status, 400);
+
+  // senha errada -> 403, usuário continua existindo
+  const wrong = await admin.del(`/api/admin/users/${user.id}`, { actionPassword: "senha-errada" });
+  assert.equal(wrong.status, 403);
+  const stillThere = await admin.get("/api/admin/users");
+  assert.ok(stillThere.body.users.some((u) => u.id === user.id), "senha errada não pode remover");
+
+  // funcionário não pode usar a rota, nem com a senha certa
+  const byEmployee = await emp.del(`/api/admin/users/${user.id}`, { actionPassword: ACTIONS_PASSWORD });
+  assert.equal(byEmployee.status, 403);
+
+  // senha certa -> remove
+  const ok = await admin.del(`/api/admin/users/${user.id}`, { actionPassword: ACTIONS_PASSWORD });
+  assert.equal(ok.status, 200);
+  assert.equal(ok.body.deleted.id, user.id);
+  assert.equal(ok.body.keptReports, 1);
+
+  const after = await admin.get("/api/admin/users");
+  assert.ok(!after.body.users.some((u) => u.id === user.id), "usuário deveria ter saído do banco");
+
+  // sessão do removido deixou de valer
+  const meAfter = await emp.get("/api/auth/me");
+  assert.equal(meAfter.status, 401);
+
+  // relatório continua existindo, sem vínculo, com o nome gravado
+  const report = await admin.get(`/api/reports/${reportId}`);
+  assert.equal(report.status, 200);
+  assert.equal(report.body.report.authorId, null);
+  assert.equal(report.body.report.authorName, name);
+
+  const stats = await admin.get("/api/reports/stats");
+  const row = stats.body.byTechnician.find((t) => t.name === name);
+  assert.ok(row && row.removed === true, "técnico removido continua nas estatísticas");
+
+  // remover de novo -> 404
+  const again = await admin.del(`/api/admin/users/${user.id}`, { actionPassword: ACTIONS_PASSWORD });
+  assert.equal(again.status, 404);
+});
+
+test("remover usuário: admin não remove a si mesmo nem outro admin", async () => {
+  const { client: admin, user: me } = await loginAs(ADMIN_EMAIL, ADMIN_PASSWORD);
+
+  const self = await admin.del(`/api/admin/users/${me.id}`, { actionPassword: ACTIONS_PASSWORD });
+  assert.equal(self.status, 403);
+
+  const users = await admin.get("/api/admin/users");
+  const otherAdmin = users.body.users.find((u) => u.role === "ADMIN" && u.id !== me.id);
+  assert.ok(otherAdmin, "seed deveria ter outros admins");
+  const other = await admin.del(`/api/admin/users/${otherAdmin.id}`, { actionPassword: ACTIONS_PASSWORD });
+  assert.equal(other.status, 403);
+});
+
+// Por último: deixa as ações administrativas do ADMIN_3 travadas por
+// LOGIN_LOCKOUT_MINUTES. Tolerante a rodar de novo dentro desse prazo.
+test("senha de ações administrativas tem limite de tentativas", async () => {
+  const { client: admin } = await loginAs(process.env.ADMIN_3_EMAIL, process.env.ADMIN_3_PASSWORD);
+  const { user } = await createActiveEmployee(admin, "lockout");
+  const maxAttempts = Number(process.env.LOGIN_MAX_ATTEMPTS || 5);
+
+  let last;
+  for (let i = 0; i < maxAttempts; i++) {
+    last = await admin.del(`/api/admin/users/${user.id}`, { actionPassword: `errada-${i}` });
+    if (last.status === 423) break;
+    assert.equal(last.status, 403);
+  }
+  assert.equal(last.status, 423, "depois do limite, deveria bloquear");
+
+  // Bloqueado: nem a senha certa passa.
+  const blocked = await admin.del(`/api/admin/users/${user.id}`, { actionPassword: ACTIONS_PASSWORD });
+  assert.equal(blocked.status, 423);
+  const still = await admin.get("/api/admin/users");
+  assert.ok(still.body.users.some((u) => u.id === user.id));
 });

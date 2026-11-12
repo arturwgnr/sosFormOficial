@@ -140,8 +140,15 @@ export default function AdminDashboard() {
             <div className="breakdown-list">
               {stats.byTechnician.map((t) => (
                 <div className="breakdown-row" key={t.authorId}>
-                  <span className="breakdown-row__label" title={t.name} style={{ textTransform: "none" }}>
+                  <span
+                    className="breakdown-row__label"
+                    title={t.removed ? `${t.name} (usuário removido)` : t.name}
+                    style={{ textTransform: "none" }}
+                  >
                     {t.name}
+                    {t.removed && (
+                      <span style={{ color: "var(--color-text-faint)", fontWeight: 500 }}> (removido)</span>
+                    )}
                   </span>
                   <div className="breakdown-row__track">
                     <div

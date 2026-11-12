@@ -9,4 +9,6 @@ export const adminApi = {
   unblock: (id) => api.post(`/admin/users/${id}/unblock`),
   setPermissions: (id, canViewAllReports) =>
     api.patch(`/admin/users/${id}/permissions`, { canViewAllReports }),
+  // Ação sensível: o backend confere a senha de ações administrativas.
+  removeUser: (id, actionPassword) => api.del(`/admin/users/${id}`, { actionPassword }),
 };

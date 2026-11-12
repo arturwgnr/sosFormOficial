@@ -15,6 +15,7 @@
     "db:seed": "node --env-file=.env prisma/seed.js",
     "db:seed:prod": "node prisma/seed.js",
     "db:studio": "prisma studio",
+    "hash:password": "node scripts/hash-password.js",
     "test:routes": "node --env-file=.env --test test/routes.test.mjs"
   },
   "dependencies": {

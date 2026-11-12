@@ -40,6 +40,7 @@ export const createReport = asyncHandler(async (req, res) => {
       clientSignature,
       sosSignature,
       authorId: req.user.id,
+      authorName: req.user.name,
     },
   });
 
@@ -98,10 +99,11 @@ export const getStats = asyncHandler(async (req, res) => {
       _count: true,
     }),
     prisma.report.groupBy({
-      by: ["authorId"],
+      // authorName entra no agrupamento: técnico removido (authorId null)
+      // continua aparecendo com o nome gravado no relatório.
+      by: ["authorId", "authorName"],
       where: { createdAt: { gte: monthStart, lt: nextMonthStart } },
       _count: true,
-      orderBy: { _count: { authorId: "desc" } },
     }),
     // Só dá pra agregar "cliente" e "tipo de serviço" (dentro do JSON de
     // dados) em JS: Prisma não agrupa por caminho de JSON no Postgres.
@@ -115,16 +117,24 @@ export const getStats = asyncHandler(async (req, res) => {
     byType[row.type] = row._count;
   });
 
-  const authorIds = byTechnicianRaw.map((row) => row.authorId);
+  const authorIds = byTechnicianRaw.map((row) => row.authorId).filter(Boolean);
   const authors = authorIds.length
     ? await prisma.user.findMany({ where: { id: { in: authorIds } }, select: { id: true, name: true } })
     : [];
   const authorNameById = new Map(authors.map((a) => [a.id, a.name]));
-  const byTechnician = byTechnicianRaw.map((row) => ({
-    authorId: row.authorId,
-    name: authorNameById.get(row.authorId) || "Desconhecido",
-    count: row._count,
-  }));
+
+  // Junta por técnico: usuário ativo pelo id (nome atual), removido pelo
+  // nome gravado. Um mesmo id pode vir em mais de uma linha se o nome
+  // gravado mudou entre relatórios.
+  const technicianMap = new Map();
+  byTechnicianRaw.forEach((row) => {
+    const key = row.authorId ? `id:${row.authorId}` : `name:${row.authorName}`;
+    const name = authorNameById.get(row.authorId) || row.authorName || "Desconhecido";
+    const current = technicianMap.get(key);
+    if (current) current.count += row._count;
+    else technicianMap.set(key, { authorId: row.authorId ?? key, name, removed: !row.authorId, count: row._count });
+  });
+  const byTechnician = [...technicianMap.values()].sort((a, b) => b.count - a.count);
 
   // Série dos últimos 6 meses (incluindo o atual).
   const monthlySeries = [];
@@ -176,6 +186,8 @@ export const getReport = asyncHandler(async (req, res) => {
     return res.status(404).json({ error: "Relatório não encontrado." });
   }
 
+  // authorId null (técnico removido) nunca bate com o usuário: só quem
+  // vê todos os relatórios acessa.
   if (report.authorId !== req.user.id && !canSeeAllReports(req.user)) {
     return res.status(403).json({ error: "Sem permissão para ver este relatório." });
   }

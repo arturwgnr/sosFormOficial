@@ -27,6 +27,8 @@ async function main() {
         // Rodar o seed também destrava um admin bloqueado por tentativas.
         failedLoginAttempts: 0,
         lockedUntil: null,
+        adminActionFailedAttempts: 0,
+        adminActionLockedUntil: null,
       },
       create: {
         name,

@@ -111,3 +111,82 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* Linhas de tabela com rótulo em cada campo (Empilhadeira: serviços e
+   viagens). Celular: 2 colunas, Das/Até lado a lado. */
+.report-form__table-row:has(.report-form__cell) {
+  grid-template-columns: 1fr 1fr;
+  align-items: start;
+}
+.report-form__table-row:has(.report-form__cell) > .btn {
+  grid-column: 1 / -1;
+  justify-self: flex-start;
+}
+.report-form__cell--wide {
+  grid-column: 1 / -1;
+}
+
+.report-form__cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.report-form__cell input {
+  width: 100%;
+  min-width: 0;
+}
+.report-form__cell-label {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+.report-form__cell-note {
+  font-size: 11px;
+  color: var(--color-text-faint);
+}
+
+.report-form__total {
+  display: flex;
+  align-items: center;
+  min-height: 2.35rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-info-bg);
+  border: 1.5px solid rgba(96, 165, 250, 0.35);
+  color: var(--color-primary);
+  font-size: var(--text-sm);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.report-form__total.is-empty {
+  background: transparent;
+  border-style: dashed;
+  border-color: var(--color-border-strong);
+  color: var(--color-text-faint);
+  font-weight: 500;
+}
+
+.report-form__hint {
+  margin: var(--space-3) 0 0;
+  font-size: var(--text-xs);
+  color: var(--color-text-faint);
+}
+
+@media (min-width: 640px) {
+  .report-form__table-row:has(.report-form__cell) {
+    grid-template-columns: 1.6fr 1.2fr 1fr 1fr 1fr auto;
+  }
+  .report-form__table-row--trips:has(.report-form__cell) {
+    grid-template-columns: 1fr 1fr 1fr 1.4fr auto;
+  }
+  .report-form__cell--wide {
+    grid-column: auto;
+  }
+  .report-form__table-row:has(.report-form__cell) > .btn {
+    grid-column: auto;
+    /* alinha com os campos, abaixo dos rótulos */
+    margin-top: 22px;
+  }
+}

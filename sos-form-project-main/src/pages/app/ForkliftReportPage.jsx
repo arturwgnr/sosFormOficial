@@ -8,7 +8,32 @@ import SignaturePad from "../../components/SignaturePad";
 import { reportsApi } from "../../api/reports";
 import { ApiError } from "../../api/client";
 import { generateForkliftReportPDF } from "../../utils/pdfForkliftGenerator";
+import { serviceTotal, tripRoundTrip } from "../../utils/timeCalc";
 import "./ReportForm.css";
+
+// Totais são sempre recalculados a partir dos horários (nunca digitados),
+// e gravados junto nos dados do relatório.
+function withComputedTotals(services, trips) {
+  return {
+    services: services.map((s) => ({ ...s, total: serviceTotal(s) })),
+    trips: trips.map((t) => {
+      const calc = tripRoundTrip(t);
+      return { ...t, hours: calc.oneWayHours, total: calc.text };
+    }),
+  };
+}
+
+function TotalCell({ value, label, note }) {
+  return (
+    <div className="report-form__cell">
+      <span className="report-form__cell-label">{label}</span>
+      <output className={`report-form__total ${value ? "" : "is-empty"}`} aria-live="polite">
+        {value || "--"}
+      </output>
+      {note && <span className="report-form__cell-note">{note}</span>}
+    </div>
+  );
+}
 
 const initialFormData = {
   client: "",
@@ -81,8 +106,9 @@ export default function ForkliftReportPage() {
     try {
       const {
         client, city, call, model, serial, hourMeter, defect, cause, solution,
-        services, trips, materials, testDone, reason, result, observation, serviceType,
+        materials, testDone, reason, result, observation, serviceType,
       } = formData;
+      const { services, trips } = withComputedTotals(formData.services, formData.trips);
 
       const { report } = await reportsApi.create({
         type: "FORKLIFT",
@@ -187,31 +213,43 @@ export default function ForkliftReportPage() {
           <div className="report-form__table">
             {formData.services.map((s, i) => (
               <div key={i} className="report-form__table-row">
-                <input
-                  placeholder="Nome"
-                  value={s.name}
-                  onChange={(e) => handleArrayChange(e, i, "name", "services")}
-                />
-                <input
-                  type="date"
-                  value={s.date}
-                  onChange={(e) => handleArrayChange(e, i, "date", "services")}
-                />
-                <input
-                  placeholder="Das"
-                  value={s.from}
-                  onChange={(e) => handleArrayChange(e, i, "from", "services")}
-                />
-                <input
-                  placeholder="Até"
-                  value={s.to}
-                  onChange={(e) => handleArrayChange(e, i, "to", "services")}
-                />
-                <input
-                  placeholder="Total"
-                  value={s.total}
-                  onChange={(e) => handleArrayChange(e, i, "total", "services")}
-                />
+                <label className="report-form__cell report-form__cell--wide">
+                  <span className="report-form__cell-label">Nome</span>
+                  <input
+                    placeholder="Nome"
+                    value={s.name}
+                    onChange={(e) => handleArrayChange(e, i, "name", "services")}
+                  />
+                </label>
+                <label className="report-form__cell report-form__cell--wide">
+                  <span className="report-form__cell-label">Data</span>
+                  <input
+                    type="date"
+                    value={s.date}
+                    onChange={(e) => handleArrayChange(e, i, "date", "services")}
+                  />
+                </label>
+                <label className="report-form__cell">
+                  <span className="report-form__cell-label">Das</span>
+                  <input
+                    type="time"
+                    placeholder="HH:MM"
+                    value={s.from}
+                    onChange={(e) => handleArrayChange(e, i, "from", "services")}
+                  />
+                </label>
+                <label className="report-form__cell">
+                  <span className="report-form__cell-label">Até</span>
+                  <input
+                    type="time"
+                    placeholder="HH:MM"
+                    value={s.to}
+                    onChange={(e) => handleArrayChange(e, i, "to", "services")}
+                  />
+                </label>
+                <div className="report-form__cell--wide">
+                  <TotalCell label="Total" value={serviceTotal(s)} />
+                </div>
                 <Button
                   variant="danger"
                   size="sm"
@@ -232,6 +270,10 @@ export default function ForkliftReportPage() {
           >
             Adicionar serviço
           </Button>
+          <p className="report-form__hint">
+            Horários no formato HH:MM (24h), digite ou escolha. Se passar da meia-noite, o total já
+            considera.
+          </p>
         </div>
 
         <div className="card report-form__section">
@@ -243,19 +285,38 @@ export default function ForkliftReportPage() {
           </h2>
           <div className="report-form__table">
             {formData.trips.map((t, i) => (
-              <div key={i} className="report-form__table-row">
-                <input placeholder="De" value={t.from} onChange={(e) => handleArrayChange(e, i, "from", "trips")} />
-                <input placeholder="Até" value={t.to} onChange={(e) => handleArrayChange(e, i, "to", "trips")} />
-                <input placeholder="KM" value={t.km} onChange={(e) => handleArrayChange(e, i, "km", "trips")} />
-                <input
-                  placeholder="Horas"
-                  value={t.hours}
-                  onChange={(e) => handleArrayChange(e, i, "hours", "trips")}
-                />
-                <input
-                  placeholder="Total"
-                  value={t.total}
-                  onChange={(e) => handleArrayChange(e, i, "total", "trips")}
+              <div key={i} className="report-form__table-row report-form__table-row--trips">
+                <label className="report-form__cell">
+                  <span className="report-form__cell-label">Das</span>
+                  <input
+                    type="time"
+                    placeholder="HH:MM"
+                    value={t.from}
+                    onChange={(e) => handleArrayChange(e, i, "from", "trips")}
+                  />
+                </label>
+                <label className="report-form__cell">
+                  <span className="report-form__cell-label">Até</span>
+                  <input
+                    type="time"
+                    placeholder="HH:MM"
+                    value={t.to}
+                    onChange={(e) => handleArrayChange(e, i, "to", "trips")}
+                  />
+                </label>
+                <label className="report-form__cell">
+                  <span className="report-form__cell-label">KM (só a ida)</span>
+                  <input
+                    inputMode="decimal"
+                    placeholder="Ex: 35"
+                    value={t.km}
+                    onChange={(e) => handleArrayChange(e, i, "km", "trips")}
+                  />
+                </label>
+                <TotalCell
+                  label="Total"
+                  value={tripRoundTrip(t).text}
+                  note="Total inclui ida e volta"
                 />
                 <Button
                   variant="danger"
@@ -276,6 +337,9 @@ export default function ForkliftReportPage() {
           >
             Adicionar viagem
           </Button>
+          <p className="report-form__hint">
+            Informe só o trajeto de ida (horários HH:MM e km). A volta é calculada automaticamente.
+          </p>
         </div>
 
         <div className="card report-form__section">

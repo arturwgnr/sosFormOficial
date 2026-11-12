@@ -10,6 +10,8 @@ import {
   blockUser,
   unblockUser,
   updatePermissions,
+  deleteUser,
+  deleteUserSchema,
   idParamSchema,
   permissionsSchema,
   listUsersQuerySchema,
@@ -31,6 +33,13 @@ router.patch(
   validateParams(idParamSchema),
   validateBody(permissionsSchema),
   updatePermissions
+);
+// Ação sensível: exige a senha de ações administrativas no corpo.
+router.delete(
+  "/users/:id",
+  validateParams(idParamSchema),
+  validateBody(deleteUserSchema),
+  deleteUser
 );
 
 export default router;

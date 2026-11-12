@@ -36,6 +36,12 @@ export const env = {
   loginMaxAttempts: int("LOGIN_MAX_ATTEMPTS", 5),
   loginLockoutMinutes: int("LOGIN_LOCKOUT_MINUTES", 15),
 
+  // Hash bcrypt (nunca a senha em texto) da senha exigida em ações
+  // administrativas sensíveis, como remover um usuário. Gerar com
+  // `npm run hash:password`. Opcional: sem ela, essas ações ficam
+  // desativadas (o servidor sobe normalmente).
+  adminActionsPasswordHash: process.env.ADMIN_ACTIONS_PASSWORD_HASH?.trim() || undefined,
+
   admins: [
     {
       name: required("ADMIN_1_NAME"),

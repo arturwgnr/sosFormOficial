@@ -6,7 +6,9 @@ import Button from "../../../components/ui/Button";
 import Spinner from "../../../components/ui/Spinner";
 import EmptyState from "../../../components/ui/EmptyState";
 import Alert from "../../../components/ui/Alert";
+import RemoveUserModal from "./RemoveUserModal";
 import { adminApi } from "../../../api/admin";
+import { useAuth } from "../../../context/useAuth";
 import "./AdminPages.css";
 
 const TABS = [
@@ -21,6 +23,14 @@ export default function UsersPage() {
   const [users, setUsers] = useState(null);
   const [error, setError] = useState("");
   const [busyId, setBusyId] = useState(null);
+  // Modo "remover usuário": mostra o botão de remover nas linhas que
+  // podem ser removidas. O backend confere tudo de novo (senha, admin,
+  // a si mesmo); isto aqui é só UX.
+  const [removeMode, setRemoveMode] = useState(false);
+  const [removeTarget, setRemoveTarget] = useState(null);
+  const { user: me } = useAuth();
+
+  const canRemove = (u) => u.role !== "ADMIN" && u.id !== me?.id;
 
   function load() {
     setUsers(null);
@@ -69,17 +79,47 @@ export default function UsersPage() {
 
       <Alert tone="error">{error}</Alert>
 
-      <div className="admin-tabs">
-        {TABS.map((tab) => (
-          <button
-            key={tab.value}
-            className={`admin-tabs__item ${status === tab.value ? "is-active" : ""}`}
-            onClick={() => setStatus(tab.value)}
+      <div className="admin-toolbar">
+        <div className="admin-tabs admin-tabs--inline">
+          {TABS.map((tab) => (
+            <button
+              key={tab.value}
+              className={`admin-tabs__item ${status === tab.value ? "is-active" : ""}`}
+              onClick={() => setStatus(tab.value)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        <div className={`admin-actions ${removeMode ? "is-armed" : ""}`} role="group" aria-label="Ações administrativas">
+          <span className="admin-actions__label">
+            <span className="material-symbols-outlined" aria-hidden="true">
+              shield_lock
+            </span>
+            Ações administrativas
+          </span>
+          <Button
+            variant={removeMode ? "danger" : "subtle"}
+            size="sm"
+            icon={removeMode ? "close" : "person_remove"}
+            onClick={() => setRemoveMode((v) => !v)}
+            aria-pressed={removeMode}
           >
-            {tab.label}
-          </button>
-        ))}
+            {removeMode ? "Cancelar remoção" : "Remover usuário"}
+          </Button>
+        </div>
       </div>
+
+      {removeMode && (
+        <p className="admin-actions__hint">
+          <span className="material-symbols-outlined" aria-hidden="true">
+            info
+          </span>
+          Escolha quem remover na lista. Administradores e a sua conta não podem ser removidos. Os
+          relatórios do usuário continuam guardados.
+        </p>
+      )}
 
       {users === null ? (
         <div style={{ padding: "var(--space-16)", textAlign: "center" }}>
@@ -126,7 +166,18 @@ export default function UsersPage() {
                     )}
                   </td>
                   <td style={{ textAlign: "right" }}>
-                    {u.role !== "ADMIN" && (
+                    {removeMode ? (
+                      canRemove(u) ? (
+                        <Button variant="danger" size="sm" icon="person_remove" onClick={() => setRemoveTarget(u)}>
+                          Remover
+                        </Button>
+                      ) : (
+                        <span style={{ color: "var(--color-text-faint)", fontSize: "var(--text-xs)" }}>
+                          {u.id === me?.id ? "Sua conta" : "Protegido (admin)"}
+                        </span>
+                      )
+                    ) : (
+                      u.role !== "ADMIN" && (
                       <Button
                         variant={u.status === "BLOCKED" ? "primary" : "danger"}
                         size="sm"
@@ -136,6 +187,7 @@ export default function UsersPage() {
                       >
                         {u.status === "BLOCKED" ? "Reativar" : "Bloquear"}
                       </Button>
+                      )
                     )}
                   </td>
                 </tr>
@@ -144,6 +196,15 @@ export default function UsersPage() {
           </table>
         </div>
       )}
+
+      <RemoveUserModal
+        user={removeTarget}
+        onClose={() => setRemoveTarget(null)}
+        onRemoved={(removed) => {
+          setUsers((prev) => prev.filter((u) => u.id !== removed.id));
+          setRemoveTarget(null);
+        }}
+      />
     </div>
   );
 }

@@ -1,6 +1,9 @@
 import { PDFDocument, StandardFonts } from "pdf-lib";
 import logo from "../assets/sos-logo.png";
 import { ReportLayout } from "./pdfLayout";
+import { serviceTotal, tripRoundTrip } from "./timeCalc";
+
+const orDash = (v) => (v ? v : "-");
 
 /**
  * @typedef {Object} ForkliftReportData
@@ -16,6 +19,8 @@ import { ReportLayout } from "./pdfLayout";
  * @property {string} solution
  * @property {Array<{name: string, date: string, from: string, to: string, total: string}>} services
  * @property {Array<{from: string, to: string, km: string, hours: string, total: string}>} trips
+ *   Trajeto de ida (from/to em HH:MM, km da ida). hours = duração da ida;
+ *   total = ida e volta ("3h · 120 km"), calculado.
  * @property {Array<{qty: string, desc: string}>} materials
  * @property {string} testDone
  * @property {string} reason
@@ -66,9 +71,12 @@ export async function generateForkliftReportPDF(data) {
 
   // --- Outros serviços ---
   layout.drawSectionTitle("Outros serviços:");
+  // Totais recalculados a partir dos horários. Relatório antigo com texto
+  // livre (sem HH:MM válido) cai no valor que foi salvo.
   data.services.forEach((s) => {
+    const total = serviceTotal(s) || s.total;
     layout.drawLine(
-      `Nome: ${s.name} | Data: ${s.date} | Das: ${s.from} | Até: ${s.to} | Total: ${s.total}`
+      `Nome: ${orDash(s.name)} | Data: ${orDash(s.date)} | Das: ${orDash(s.from)} | Até: ${orDash(s.to)} | Total: ${orDash(total)}`
     );
   });
   layout.addGap(8);
@@ -76,9 +84,11 @@ export async function generateForkliftReportPDF(data) {
   // --- Viagens ---
   layout.drawSectionTitle("Viagens efetuadas:");
   data.trips.forEach((t) => {
+    const calc = tripRoundTrip(t);
     layout.drawLine(
-      `De: ${t.from} | Até: ${t.to} | KM: ${t.km} | Horas: ${t.hours} | Total: ${t.total}`
+      `Trajeto (ida): das ${orDash(t.from)} até ${orDash(t.to)} | Duração: ${orDash(calc.oneWayHours || t.hours)} | KM: ${orDash(calc.oneWayKm || t.km)}`
     );
+    layout.drawLine(`Total ida e volta: ${orDash(calc.text || t.total)}`, { indent: 20 });
   });
   layout.addGap(8);
 
