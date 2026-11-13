@@ -20,6 +20,21 @@ function int(name, fallback) {
   return parsed;
 }
 
+// Hash bcrypt opcional. Tira aspas das pontas (comum ao colar o valor
+// com aspas no painel do Render, onde elas viram parte do valor) e avisa
+// no log se o formato não for de um hash bcrypt, em vez de falhar calado.
+function bcryptHash(name) {
+  const raw = process.env[name]?.trim().replace(/^(['"])(.*)\1$/, "$2").trim();
+  if (!raw) return undefined;
+  if (!/^\$2[aby]\$\d{2}\$[A-Za-z0-9./]{53}$/.test(raw)) {
+    console.warn(
+      `[env] ${name} não parece um hash bcrypt válido (gere com npm run hash:password). Ação desativada.`
+    );
+    return undefined;
+  }
+  return raw;
+}
+
 export const env = {
   nodeEnv: process.env.NODE_ENV || "development",
   port: int("PORT", 4000),
@@ -40,7 +55,7 @@ export const env = {
   // administrativas sensíveis, como remover um usuário. Gerar com
   // `npm run hash:password`. Opcional: sem ela, essas ações ficam
   // desativadas (o servidor sobe normalmente).
-  adminActionsPasswordHash: process.env.ADMIN_ACTIONS_PASSWORD_HASH?.trim() || undefined,
+  adminActionsPasswordHash: bcryptHash("ADMIN_ACTIONS_PASSWORD_HASH"),
 
   admins: [
     {

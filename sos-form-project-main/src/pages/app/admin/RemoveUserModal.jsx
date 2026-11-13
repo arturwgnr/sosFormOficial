@@ -83,12 +83,20 @@ export default function RemoveUserModal({ user, onClose, onRemoved }) {
             Os relatórios criados por este usuário são mantidos e continuam mostrando o nome do técnico.
           </p>
 
-          <Alert tone="error">{error}</Alert>
+          {error && (
+            <div className="remove-user__error">
+              <Alert tone="error">{error}</Alert>
+            </div>
+          )}
 
           <Field label="Senha de ações administrativas" required>
+            {/* "new-password" (e não "off", que o Chrome ignora em campo de
+                senha) evita o navegador preencher sozinho a senha de login
+                salva, que seria enviada no lugar da senha de ações. */}
             <input
               type="password"
-              autoComplete="off"
+              name="admin-action-password"
+              autoComplete="new-password"
               autoFocus
               value={password}
               onChange={(e) => setPassword(e.target.value)}

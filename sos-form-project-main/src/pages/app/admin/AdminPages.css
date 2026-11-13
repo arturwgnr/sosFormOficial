@@ -190,3 +190,10 @@
     justify-content: center;
   }
 }
+.remove-user__error {
+  margin: var(--space-4) 0 var(--space-5);
+}
+.remove-user__error .alert {
+  padding: var(--space-3) var(--space-4);
+  line-height: 1.45;
+}
