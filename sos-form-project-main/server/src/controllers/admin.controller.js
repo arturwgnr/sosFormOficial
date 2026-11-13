@@ -31,10 +31,18 @@ export const listPendingUsers = asyncHandler(async (req, res) => {
 
 export const listUsers = asyncHandler(async (req, res) => {
   const { status } = req.query;
-  const users = await prisma.user.findMany({
-    where: status ? { status } : undefined,
-    orderBy: { createdAt: "asc" },
-  });
+  const users = await prisma.user.findMany({ where: status ? { status } : undefined });
+
+  // Admins primeiro, depois funcionários; cada grupo em ordem alfabética.
+  // Ordenado aqui (e não no banco) pra ignorar acento e maiúscula do jeito
+  // do português, sem depender da collation do Postgres.
+  const roleOrder = { ADMIN: 0, EMPLOYEE: 1 };
+  users.sort(
+    (a, b) =>
+      (roleOrder[a.role] ?? 9) - (roleOrder[b.role] ?? 9) ||
+      a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" })
+  );
+
   res.json({ users: users.map(toPublicUser) });
 });
 
