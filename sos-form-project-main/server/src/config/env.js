@@ -54,7 +54,9 @@ export const env = {
   nodeEnv: process.env.NODE_ENV || "development",
   port: int("PORT", 4000),
   databaseUrl: required("DATABASE_URL"),
-  corsOrigin: required("CORS_ORIGIN"),
+  // Sem "/" no fim: o navegador manda a origem sem barra, e um valor
+  // colado com barra no painel faria o CORS recusar tudo.
+  corsOrigin: required("CORS_ORIGIN").trim().replace(/\/+$/, ""),
 
   sessionCookieName: process.env.SESSION_COOKIE_NAME || "sos_session",
   sessionTtlDays: int("SESSION_TTL_DAYS", 7),

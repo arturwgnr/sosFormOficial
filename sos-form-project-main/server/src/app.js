@@ -10,6 +10,10 @@ import reportsRoutes from "./routes/reports.routes.js";
 export function createApp() {
   const app = express();
 
+  // Render fica atrás de um proxy HTTPS: sem isso o Express acha que a
+  // conexão é http (req.secure/req.ip errados).
+  app.set("trust proxy", 1);
+
   app.use(cors({ origin: env.corsOrigin, credentials: true }));
   // limite maior que o padrão: assinaturas em base64 podem passar de 1mb.
   app.use(express.json({ limit: "10mb" }));

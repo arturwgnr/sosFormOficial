@@ -7,6 +7,11 @@ import { env } from "../src/config/env.js";
 
 const prisma = new PrismaClient();
 
+// A senha do .env é só a INICIAL: admin que já existe mantém a senha que
+// trocou pela tela. Para forçar a senha do .env de novo (ex: admin
+// esqueceu a dele): `npm run db:seed -- --reset-passwords`.
+const resetPasswords = process.argv.includes("--reset-passwords");
+
 async function main() {
   for (const admin of env.admins) {
     // Mesma normalização do registro/login (zod: trim + toLowerCase); sem
@@ -21,7 +26,7 @@ async function main() {
       where: { email },
       update: {
         name,
-        passwordHash,
+        ...(resetPasswords ? { passwordHash } : {}),
         role: "ADMIN",
         status: "ACTIVE",
         // Rodar o seed também destrava um admin bloqueado por tentativas.
@@ -40,7 +45,12 @@ async function main() {
       },
     });
 
-    console.log(`Admin ${existing ? "atualizado" : "criado"}: ${email}`);
+    const status = !existing
+      ? "criado"
+      : resetPasswords
+        ? "atualizado (senha redefinida para a do .env)"
+        : "atualizado (senha mantida)";
+    console.log(`Admin ${status}: ${email}`);
   }
 }
 
