@@ -31,6 +31,7 @@ export default function HistoryPage() {
   const [filters, setFilters] = useState({ q: "", type: "", from: "", to: "" });
   const [reloadKey, setReloadKey] = useState(0);
   const [downloadingId, setDownloadingId] = useState(null);
+  const [viewingId, setViewingId] = useState(null);
   const [error, setError] = useState("");
   // Modo "excluir" (só admin; o backend confere tudo de novo): mostra a
   // seleção nas linhas. `selected` guarda a linha inteira por ID, pra
@@ -106,20 +107,47 @@ export default function HistoryPage() {
     setReloadKey((k) => k + 1);
   }
 
+  async function buildPdf(row) {
+    const { report } = await reportsApi.get(row.id);
+    const payload = { id: report.publicId, ...report.data, clientSignature: report.clientSignature, sosSignature: report.sosSignature };
+    const pdfUrl =
+      report.type === "PALLET" ? await generatePalletReportPDF(payload) : await generateForkliftReportPDF(payload);
+    return { report, pdfUrl };
+  }
+
   async function handleDownload(row) {
     setDownloadingId(row.id);
     try {
-      const { report } = await reportsApi.get(row.id);
-      const payload = { id: report.publicId, ...report.data, clientSignature: report.clientSignature, sosSignature: report.sosSignature };
-
-      const pdfUrl =
-        report.type === "PALLET" ? await generatePalletReportPDF(payload) : await generateForkliftReportPDF(payload);
-
+      const { report, pdfUrl } = await buildPdf(row);
       downloadPdf(pdfUrl, report.publicId, report.type);
     } catch {
       setError("Não foi possível gerar o PDF desse relatório.");
     } finally {
       setDownloadingId(null);
+    }
+  }
+
+  // Abre o PDF numa aba nova só pra visualizar, sem baixar. A aba é aberta
+  // ANTES de gerar (ainda dentro do clique), senão o bloqueador de pop-up
+  // barra. O gerador devolve data: URL, que o navegador não abre direto
+  // numa aba: vira Blob URL.
+  async function handleView(row) {
+    const tab = window.open("", "_blank");
+    if (tab) tab.document.title = "Gerando PDF...";
+    setViewingId(row.id);
+    try {
+      const { pdfUrl } = await buildPdf(row);
+      const blob = await (await fetch(pdfUrl)).blob();
+      const blobUrl = URL.createObjectURL(blob);
+      if (tab) tab.location.href = blobUrl;
+      else window.location.href = blobUrl; // pop-up bloqueado: abre na mesma aba
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+    } catch (err) {
+      console.error("Falha ao abrir o PDF:", err);
+      tab?.close();
+      setError("Não foi possível abrir o PDF desse relatório.");
+    } finally {
+      setViewingId(null);
     }
   }
 
@@ -268,6 +296,17 @@ export default function HistoryPage() {
                       <td>{formatDateTime(r.createdAt)}</td>
                       <td style={{ textAlign: "right" }}>
                         <div className="history-row-actions">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            icon="visibility"
+                            loading={viewingId === r.id}
+                            onClick={() => handleView(r)}
+                            title="Visualizar o PDF sem baixar"
+                            aria-label={`Visualizar PDF de ${r.publicId}`}
+                          >
+                            Ver
+                          </Button>
                           <Button
                             variant="ghost"
                             size="sm"
