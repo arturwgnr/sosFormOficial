@@ -1,49 +1,46 @@
-# Updates: usuários e relatório de empilhadeira
+# Updates: histórico, senha do usuário e limpeza de admins
 
-Data: 2026-11-12
-Status: concluído (2026-11-12)
+Data: 2026-11-13
+Status: em andamento (falta aplicar a limpeza de admins, ver abaixo)
 
-## Usuários: ações administrativas
+## Histórico: excluir relatórios
 
-- [x] Ao lado dos filtros "Todos / Ativos / Pendentes / Bloqueados",
-      adicionar uma área "Ações administrativas"
-- [x] Ações sensíveis (começando por remover usuário do banco) exigem
-      uma senha de ações administrativas antes de executar
-- [x] A senha fica no .env do servidor como HASH bcrypt
-      (ADMIN_ACTIONS_PASSWORD_HASH), nunca em texto puro. No
-      .env.example, só um valor de exemplo
-- [x] Verificação da senha feita no backend, com limite de tentativas
-- [x] Antes de remover: modal de confirmação mostrando nome e e-mail
-      do usuário
-- [x] Ao remover um usuário, os relatórios criados por ele NÃO são
-      apagados (são registros da empresa). O relatório continua
-      mostrando o nome do técnico
-- [x] Um admin não pode remover a si mesmo nem os outros admins
+- [x] Opção de excluir relatórios no histórico, no mesmo estilo das
+      ações administrativas de Usuários
+- [x] Exige a mesma senha de ações administrativas
+      (ADMIN_ACTIONS_PASSWORD_HASH), verificada no backend, com o mesmo
+      limite de tentativas
+- [x] Disponível apenas para admins (checado no backend)
+- [x] Permitir excluir um relatório ou vários selecionados
+- [x] Modal de confirmação listando ID, cliente e data de cada
+      relatório antes de excluir, deixando claro que é irreversível
+- [x] Toaster e som de confirmação, no padrão já existente
 
-## Empilhadeira: "Outros serviços"
+## Perfil: alterar senha
 
-- [x] Campos "Das" e "Até" passam a ser horários (seletor de hora,
-      formato HH:MM), podendo digitar ou escolher
-- [x] Total calculado automaticamente e exibido com unidade
-      (ex: 07:30 até 19:30 = 12h; 08:00 até 10:30 = 2h30)
-- [x] Funcionar quando o serviço passa da meia-noite
-      (ex: 22:00 até 02:00 = 4h)
-- [x] Dica sutil no campo indicando o formato (placeholder ou texto
-      pequeno abaixo)
-- [x] Total aparece também no PDF
+- [x] Clicar na foto/avatar do usuário abre um menu com
+      "Alterar senha"
+- [x] Formulário com: senha atual, nova senha e confirmar nova senha
+- [x] Validar que as duas novas senhas são iguais e que têm tamanho
+      mínimo, com mensagem clara de erro
+- [x] Botão de mostrar/ocultar senha nos campos
+- [x] Após alterar: toaster de sucesso e encerrar as outras sessões
+      abertas desse usuário
+- [x] Funciona para admins e funcionários
 
-## Empilhadeira: "Viagem efetuada"
+## Limpeza de admins
 
-- [x] Mesma lógica de horários: usuário informa "Das", "Até" e km
-      de UM trajeto (só a ida)
-- [x] Sistema calcula automaticamente o total de ida e volta
-      (horas x2 e km x2)
-- [x] Indicação sutil de que a volta é calculada automaticamente
-      (ex: texto pequeno "Total inclui ida e volta" ao lado do total)
-- [x] PDF mostra o trajeto informado e o total de ida e volta
+- [ ] Manter como ADMIN apenas os 4 e-mails definidos no .env
+- [ ] Qualquer outro usuário que estiver com papel ADMIN é removido
+- [x] Relatórios criados por eles NÃO são apagados (mesma regra da
+      remoção de usuários)
+      Script pronto (`npm run admins:cleanup`, simula por padrão;
+      `-- --apply` executa). Bloqueado: ADMIN_3 e ADMIN_4 do .env têm o
+      mesmo e-mail.
 
 ## Critério de conclusão
 
-Cálculos testados com horários comuns, com minutos quebrados e
-passando da meia-noite. Remoção de usuário testada com senha certa,
-senha errada e usuário que tem relatórios.
+Exclusão testada com senha certa, errada e com vários relatórios.
+Troca de senha testada com senha atual errada, confirmação diferente
+e caso de sucesso (login com a nova senha). Banco com apenas os 4
+admins do .env.

@@ -1,7 +1,13 @@
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { hashPassword, comparePassword } from "../utils/password.js";
-import { createSession, revokeSession, sessionCookieOptions, clearSessionCookie } from "../utils/session.js";
+import {
+  createSession,
+  revokeSession,
+  revokeOtherSessionsForUser,
+  sessionCookieOptions,
+  clearSessionCookie,
+} from "../utils/session.js";
 import { toPublicUser } from "../utils/publicUser.js";
 import { env } from "../config/env.js";
 import { asyncHandler } from "../middleware/errorHandler.js";
@@ -106,4 +112,66 @@ export const logout = asyncHandler(async (req, res) => {
 
 export const me = asyncHandler(async (req, res) => {
   res.json({ user: req.publicUser });
+});
+
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Informe a senha atual."),
+    newPassword: z.string().min(8, "A nova senha precisa de pelo menos 8 caracteres.").max(200),
+    confirmPassword: z.string().min(1, "Confirme a nova senha."),
+  })
+  .refine((d) => d.newPassword === d.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "A confirmação não é igual à nova senha.",
+  })
+  .refine((d) => d.newPassword !== d.currentPassword, {
+    path: ["newPassword"],
+    message: "A nova senha precisa ser diferente da atual.",
+  });
+
+// Troca a senha do próprio usuário logado (admin ou funcionário). Errar a
+// senha atual conta no mesmo limite de tentativas do login, senão essa
+// rota viraria um jeito de testar senhas sem bloqueio.
+export const changePassword = asyncHandler(async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+
+  if (user.lockedUntil && user.lockedUntil > new Date()) {
+    const minutesLeft = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000);
+    return res.status(423).json({
+      error: `Muitas tentativas incorretas. Tente novamente em ${minutesLeft} min.`,
+    });
+  }
+
+  if (!(await comparePassword(currentPassword, user.passwordHash))) {
+    const attempts = user.failedLoginAttempts + 1;
+    const lockout = attempts >= env.loginMaxAttempts;
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        failedLoginAttempts: lockout ? 0 : attempts,
+        lockedUntil: lockout ? new Date(Date.now() + env.loginLockoutMinutes * 60 * 1000) : null,
+      },
+    });
+    if (lockout) {
+      return res.status(423).json({
+        error: `Muitas tentativas incorretas. Troca de senha bloqueada por ${env.loginLockoutMinutes} min.`,
+      });
+    }
+    // 403 e não 401: a sessão continua válida, só a senha atual errou.
+    return res.status(403).json({
+      error: `Senha atual incorreta. ${env.loginMaxAttempts - attempts} tentativa(s) restante(s).`,
+    });
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { passwordHash: await hashPassword(newPassword), failedLoginAttempts: 0, lockedUntil: null },
+  });
+  const closedSessions = await revokeOtherSessionsForUser(
+    user.id,
+    req.cookies?.[env.sessionCookieName]
+  );
+
+  res.json({ message: "Senha alterada.", closedSessions });
 });

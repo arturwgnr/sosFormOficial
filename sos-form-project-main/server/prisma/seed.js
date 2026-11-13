@@ -1,4 +1,4 @@
-// Cria (ou atualiza) os 3 administradores a partir do .env.
+// Cria (ou atualiza) os administradores a partir do .env.
 // Nunca rodar isso como parte de um fluxo de tela: é só linha de comando
 // (`npm run db:seed`), como o CLAUDE.md exige.
 import { PrismaClient } from "@prisma/client";

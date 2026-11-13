@@ -2,6 +2,7 @@ import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { nextReportPublicId } from "../utils/reportId.js";
 import { asyncHandler } from "../middleware/errorHandler.js";
+import { verifyAdminActionPassword, actionPasswordField } from "../utils/adminActionPassword.js";
 
 export const idParamSchema = z.object({ id: z.string().min(1) });
 
@@ -193,4 +194,33 @@ export const getReport = asyncHandler(async (req, res) => {
   }
 
   res.json({ report });
+});
+
+export const deleteReportsSchema = z.object({
+  ids: z
+    .array(z.string().min(1))
+    .min(1, "Selecione ao menos um relatório.")
+    .max(100, "No máximo 100 relatórios por vez.")
+    .transform((ids) => [...new Set(ids)]),
+  actionPassword: actionPasswordField,
+});
+
+// Exclusão definitiva de um ou vários relatórios. Só ADMIN (checado na
+// rota) e com a senha de ações administrativas. Tudo ou nada: se algum
+// ID não existir, nada é apagado.
+export const deleteReports = asyncHandler(async (req, res) => {
+  const { ids } = req.body;
+
+  const found = await prisma.report.findMany({
+    where: { id: { in: ids } },
+    select: { id: true, publicId: true },
+  });
+  if (found.length !== ids.length) {
+    return res.status(404).json({ error: "Um ou mais relatórios não foram encontrados. Nada foi excluído." });
+  }
+
+  if (!(await verifyAdminActionPassword(req, res))) return;
+
+  const { count } = await prisma.report.deleteMany({ where: { id: { in: ids } } });
+  res.json({ deleted: count, publicIds: found.map((r) => r.publicId) });
 });

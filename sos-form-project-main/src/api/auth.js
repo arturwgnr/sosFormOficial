@@ -5,4 +5,6 @@ export const authApi = {
   login: (email, password) => api.post("/auth/login", { email, password }),
   register: (name, email, password) => api.post("/auth/register", { name, email, password }),
   logout: () => api.post("/auth/logout"),
+  changePassword: (currentPassword, newPassword, confirmPassword) =>
+    api.post("/auth/change-password", { currentPassword, newPassword, confirmPassword }),
 };

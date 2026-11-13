@@ -2,7 +2,10 @@ import { useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 import logo from "../../assets/sos-logo.png";
+import UserMenu from "./UserMenu";
+import ChangePasswordModal from "./ChangePasswordModal";
 import "./AppShell.css";
+import "./UserMenu.css";
 
 const MAIN_NAV = [
   { to: "/app", label: "Painel", icon: "dashboard", end: true },
@@ -19,6 +22,7 @@ const ADMIN_NAV = [
 export default function AppShell() {
   const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [passwordOpen, setPasswordOpen] = useState(false);
   // O painel usa a largura da tela no desktop; formulários e listas
   // mantêm a largura de leitura padrão.
   const isWide = useLocation().pathname === "/app";
@@ -51,11 +55,17 @@ export default function AppShell() {
         </nav>
 
         <div className="app-shell__user">
-          <div className="app-shell__avatar">{user?.name?.[0]?.toUpperCase() || "?"}</div>
-          <div className="app-shell__user-info">
-            <strong>{user?.name}</strong>
-            <span>{user?.role === "ADMIN" ? "Administrador" : "Funcionário"}</span>
-          </div>
+          <UserMenu
+            user={user}
+            placement="up"
+            onChangePassword={() => setPasswordOpen(true)}
+            onLogout={logout}
+          >
+            <span className="app-shell__user-info">
+              <strong>{user?.name}</strong>
+              <span>{user?.role === "ADMIN" ? "Administrador" : "Funcionário"}</span>
+            </span>
+          </UserMenu>
           <button className="app-shell__logout" onClick={logout} title="Sair" aria-label="Sair">
             <span className="material-symbols-outlined" aria-hidden="true">
               logout
@@ -75,8 +85,15 @@ export default function AppShell() {
           </span>
         </button>
         <img src={logo} alt="SOS Transpaletes" className="app-shell__topbar-logo" />
-        <div className="app-shell__topbar-avatar">{user?.name?.[0]?.toUpperCase() || "?"}</div>
+        <UserMenu
+          user={user}
+          placement="down"
+          onChangePassword={() => setPasswordOpen(true)}
+          onLogout={logout}
+        />
       </header>
+
+      <ChangePasswordModal open={passwordOpen} onClose={() => setPasswordOpen(false)} />
 
       {mobileMenuOpen && (
         <div className="app-shell__mobile-menu" role="dialog" aria-modal="true">

@@ -35,6 +35,21 @@ function bcryptHash(name) {
   return raw;
 }
 
+// Admins numerados em sequência: ADMIN_1_*, ADMIN_2_*, ... até o primeiro
+// número sem ADMIN_N_EMAIL. Pelo menos um é obrigatório.
+function readAdmins() {
+  const admins = [];
+  for (let n = 1; process.env[`ADMIN_${n}_EMAIL`]?.trim(); n += 1) {
+    admins.push({
+      name: required(`ADMIN_${n}_NAME`),
+      email: required(`ADMIN_${n}_EMAIL`).trim().toLowerCase(),
+      password: required(`ADMIN_${n}_PASSWORD`),
+    });
+  }
+  if (admins.length === 0) required("ADMIN_1_EMAIL");
+  return admins;
+}
+
 export const env = {
   nodeEnv: process.env.NODE_ENV || "development",
   port: int("PORT", 4000),
@@ -57,23 +72,8 @@ export const env = {
   // desativadas (o servidor sobe normalmente).
   adminActionsPasswordHash: bcryptHash("ADMIN_ACTIONS_PASSWORD_HASH"),
 
-  admins: [
-    {
-      name: required("ADMIN_1_NAME"),
-      email: required("ADMIN_1_EMAIL"),
-      password: required("ADMIN_1_PASSWORD"),
-    },
-    {
-      name: required("ADMIN_2_NAME"),
-      email: required("ADMIN_2_EMAIL"),
-      password: required("ADMIN_2_PASSWORD"),
-    },
-    {
-      name: required("ADMIN_3_NAME"),
-      email: required("ADMIN_3_EMAIL"),
-      password: required("ADMIN_3_PASSWORD"),
-    },
-  ],
+  // Os únicos e-mails que podem ser ADMIN (ver scripts/cleanup-admins.js).
+  admins: readAdmins(),
 };
 
 export const isProduction = env.nodeEnv === "production";

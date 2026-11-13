@@ -16,6 +16,8 @@
     "db:seed:prod": "node prisma/seed.js",
     "db:studio": "prisma studio",
     "hash:password": "node scripts/hash-password.js",
+    "admins:cleanup": "node --env-file=.env scripts/cleanup-admins.js",
+    "admins:cleanup:prod": "node scripts/cleanup-admins.js",
     "test:routes": "node --env-file=.env --test test/routes.test.mjs"
   },
   "dependencies": {

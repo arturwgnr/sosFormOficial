@@ -416,6 +416,117 @@ test("remover usuário: admin não remove a si mesmo nem outro admin", async () 
   assert.equal(other.status, 403);
 });
 
+test("excluir relatórios: senha errada recusa, senha certa apaga vários, só admin, tudo ou nada", async () => {
+  assert.ok(ACTIONS_PASSWORD, "defina TEST_ADMIN_ACTIONS_PASSWORD no ambiente do teste");
+  const { client: admin } = await loginAs(ADMIN_EMAIL, ADMIN_PASSWORD);
+  const { emp } = await createActiveEmployee(admin, "excluir");
+
+  const ids = [];
+  for (const type of ["PALLET", "FORKLIFT", "PALLET"]) {
+    const r = await emp.post("/api/reports", { type, data: { client: `Cliente exclusão ${type}` } });
+    assert.equal(r.status, 201);
+    ids.push(r.body.report.id);
+  }
+
+  // funcionário não pode, nem com a senha certa (403 antes da validação)
+  const byEmployee = await emp.post("/api/reports/delete", { ids, actionPassword: ACTIONS_PASSWORD });
+  assert.equal(byEmployee.status, 403);
+
+  // sem senha / sem IDs -> 400
+  assert.equal((await admin.post("/api/reports/delete", { ids })).status, 400);
+  assert.equal((await admin.post("/api/reports/delete", { ids: [], actionPassword: ACTIONS_PASSWORD })).status, 400);
+
+  // senha errada -> 403, nada apagado
+  const wrong = await admin.post("/api/reports/delete", { ids, actionPassword: "senha-errada" });
+  assert.equal(wrong.status, 403);
+  for (const id of ids) assert.equal((await admin.get(`/api/reports/${id}`)).status, 200);
+
+  // um ID inexistente no meio -> 404 e nada apagado
+  const mixed = await admin.post("/api/reports/delete", { ids: [...ids, "nao-existe"], actionPassword: ACTIONS_PASSWORD });
+  assert.equal(mixed.status, 404);
+  for (const id of ids) assert.equal((await admin.get(`/api/reports/${id}`)).status, 200);
+
+  // um só
+  const one = await admin.post("/api/reports/delete", { ids: [ids[0]], actionPassword: ACTIONS_PASSWORD });
+  assert.equal(one.status, 200);
+  assert.equal(one.body.deleted, 1);
+  assert.equal((await admin.get(`/api/reports/${ids[0]}`)).status, 404);
+
+  // vários de uma vez (com ID repetido, que conta uma vez só)
+  const many = await admin.post("/api/reports/delete", {
+    ids: [ids[1], ids[2], ids[2]],
+    actionPassword: ACTIONS_PASSWORD,
+  });
+  assert.equal(many.status, 200);
+  assert.equal(many.body.deleted, 2);
+  assert.equal(many.body.publicIds.length, 2);
+  for (const id of ids.slice(1)) assert.equal((await admin.get(`/api/reports/${id}`)).status, 404);
+});
+
+test("alterar senha: atual errada, confirmação diferente, e sucesso derruba as outras sessões", async () => {
+  const { client: admin } = await loginAs(ADMIN_EMAIL, ADMIN_PASSWORD);
+  const { emp, email } = await createActiveEmployee(admin, "trocasenha");
+
+  // segunda sessão do mesmo usuário (outro aparelho)
+  const { client: otherDevice } = await loginAs(email, "senha12345");
+
+  // sem sessão -> 401
+  const anon = makeClient();
+  const noAuth = await anon.post("/api/auth/change-password", {
+    currentPassword: "senha12345",
+    newPassword: "novaSenha123",
+    confirmPassword: "novaSenha123",
+  });
+  assert.equal(noAuth.status, 401);
+
+  // senha atual errada -> 403
+  const wrongCurrent = await emp.post("/api/auth/change-password", {
+    currentPassword: "senhaERRADA",
+    newPassword: "novaSenha123",
+    confirmPassword: "novaSenha123",
+  });
+  assert.equal(wrongCurrent.status, 403);
+
+  // confirmação diferente -> 400 apontando o campo
+  const mismatch = await emp.post("/api/auth/change-password", {
+    currentPassword: "senha12345",
+    newPassword: "novaSenha123",
+    confirmPassword: "outraSenha123",
+  });
+  assert.equal(mismatch.status, 400);
+  assert.ok(mismatch.body.issues.some((i) => i.path === "confirmPassword"));
+
+  // nova curta demais -> 400
+  const tooShort = await emp.post("/api/auth/change-password", {
+    currentPassword: "senha12345",
+    newPassword: "curta",
+    confirmPassword: "curta",
+  });
+  assert.equal(tooShort.status, 400);
+
+  // nada disso trocou a senha: o outro aparelho continua logado
+  assert.equal((await otherDevice.get("/api/auth/me")).status, 200);
+
+  // sucesso
+  const ok = await emp.post("/api/auth/change-password", {
+    currentPassword: "senha12345",
+    newPassword: "novaSenha123",
+    confirmPassword: "novaSenha123",
+  });
+  assert.equal(ok.status, 200);
+  assert.equal(ok.body.closedSessions, 1);
+
+  // sessão atual segue valendo, a do outro aparelho caiu
+  assert.equal((await emp.get("/api/auth/me")).status, 200);
+  assert.equal((await otherDevice.get("/api/auth/me")).status, 401);
+
+  // senha antiga não loga mais, a nova loga
+  const oldLogin = await makeClient().post("/api/auth/login", { email, password: "senha12345" });
+  assert.equal(oldLogin.status, 401);
+  const newLogin = await makeClient().post("/api/auth/login", { email, password: "novaSenha123" });
+  assert.equal(newLogin.status, 200);
+});
+
 // Por último: deixa as ações administrativas do ADMIN_3 travadas por
 // LOGIN_LOCKOUT_MINUTES. Tolerante a rodar de novo dentro desse prazo.
 test("senha de ações administrativas tem limite de tentativas", async () => {

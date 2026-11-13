@@ -72,3 +72,12 @@ export function sessionCookieOptions(expiresAt) {
 export function clearSessionCookie(res) {
   res.clearCookie(env.sessionCookieName, baseCookieOptions());
 }
+
+// Usado ao trocar a senha: derruba todas as sessões do usuário menos a
+// atual (quem trocou continua logado; outros aparelhos saem).
+export async function revokeOtherSessionsForUser(userId, currentToken) {
+  const { count } = await prisma.session.deleteMany({
+    where: { userId, NOT: { tokenHash: hashToken(currentToken) } },
+  });
+  return count;
+}
