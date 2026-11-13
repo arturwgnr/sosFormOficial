@@ -1,7 +1,7 @@
 # Updates: histórico, senha do usuário e limpeza de admins
 
 Data: 2026-11-13
-Status: em andamento (falta aplicar a limpeza de admins, ver abaixo)
+Status: concluído (2026-11-13)
 
 ## Histórico: excluir relatórios
 
@@ -30,13 +30,12 @@ Status: em andamento (falta aplicar a limpeza de admins, ver abaixo)
 
 ## Limpeza de admins
 
-- [ ] Manter como ADMIN apenas os 4 e-mails definidos no .env
-- [ ] Qualquer outro usuário que estiver com papel ADMIN é removido
+- [x] Manter como ADMIN apenas os 4 e-mails definidos no .env
+- [x] Qualquer outro usuário que estiver com papel ADMIN é removido
 - [x] Relatórios criados por eles NÃO são apagados (mesma regra da
       remoção de usuários)
-      Script pronto (`npm run admins:cleanup`, simula por padrão;
-      `-- --apply` executa). Bloqueado: ADMIN_3 e ADMIN_4 do .env têm o
-      mesmo e-mail.
+      Aplicado no banco local em 2026-11-13 (2 admins removidos, sem
+      relatórios). Produção: `npm run admins:cleanup:prod` no Render.
 
 ## Critério de conclusão
 
